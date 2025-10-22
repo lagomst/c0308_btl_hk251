@@ -1,0 +1,238 @@
+\documentclass[a4paper]{article}
+% ===== Cấu hình gói và font cơ bản (tiếng Việt, toán, hình vẽ, bảng biểu) =====
+\usepackage{vntex}
+\usepackage{mathptmx}[ptm]
+\usepackage{a4wide,amssymb,epsfig,latexsym,array,hhline,fancyhdr}
+\usepackage[normalem]{ulem}
+\usepackage{placeins}
+\usepackage[makeroom]{cancel}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{multicol,longtable,amscd}
+\usepackage{diagbox}
+\usepackage{booktabs}
+\usepackage{alltt}
+\usepackage[framemethod=tikz]{mdframed}
+\usepackage{caption,subcaption}
+\usepackage{float}
+\usepackage{lastpage}
+\usepackage[lined,boxed,commentsnumbered]{algorithm2e}
+\usepackage{enumerate}
+\usepackage{enumitem}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{tabularx, caption}
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{rotating}
+\usepackage{graphics}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{epsfig}
+\usepackage{tikz}
+\usetikzlibrary{arrows,snakes,backgrounds,calc}
+\usepackage[unicode]{hyperref}
+\hypersetup{urlcolor=blue,linkcolor=black,citecolor=black,colorlinks=true}
+\usepackage{listings}
+\usepackage[normalem]{ulem}
+
+% ===== Định nghĩa môi trường định lý/mệnh đề, đánh số, và ẩn số trang ở danh mục =====
+\newtheorem{theorem}{{\bf Định lý}}
+\newtheorem{property}{{\bf Tính chất}}
+\newtheorem{proposition}{{\bf Mệnh đề}}
+\newtheorem{corollary}[proposition]{{\bf Hệ quả}}
+\newtheorem{lemma}[proposition]{{\bf Bổ đề}}
+\theoremstyle{definition}
+\newtheorem{exer}{Bài toán}
+\addtocontents{toc}{\protect\thispagestyle{empty}}
+\addtocontents{lof}{\protect\thispagestyle{empty}}
+\addtocontents{lot}{\protect\thispagestyle{empty}}
+
+% ===== Cấu hình khổ giấy và lề trang =====
+\def\thesislayout{	% A4: 210 × 297
+	\geometry{
+		a4paper,
+		total={160mm,240mm},  % fix over page
+		left=30mm,
+		top=22mm,
+            right=20mm,
+            bottom=20mm,
+	}
+}
+\def\thesisheadlayout{	% A4: 210 × 297
+	\geometry{
+		a4paper,
+		total={160mm,240mm},  % fix over page
+		left=30mm,
+		top=10mm,
+	}
+}
+\thesislayout
+
+% ===== Cấu hình hiển thị mã nguồn (listings) =====
+\lstset{
+	language=R,
+	basicstyle=\footnotesize\sffamily,
+	commentstyle=\ttfamily\color{black},
+	numbers=left,
+	numberstyle=\ttfamily\color{black}\footnotesize,
+	stepnumber=1,
+	numbersep=5pt,
+	backgroundcolor=\color{white},
+	showspaces=false,
+	showstringspaces=false,
+	showtabs=false,
+	frame=single,
+	tabsize=2,
+	captionpos=b,
+	breaklines=true,
+	breakatwhitespace=false,
+	title=\lstname,
+	escapeinside={},
+	keywordstyle={},
+	morekeywords={}
+}
+
+% ===== Cấu hình header/footer (fancyhdr) =====
+\setlength{\headheight}{40pt}
+\pagestyle{fancy}
+\fancyhead{} % clear all header fields
+\renewcommand{\footruleskip}{1mm}
+
+\fancyhead[L]{
+	\begin{tabular}{rl}
+		\begin{picture}(25,15)(0,0)
+		\put(0,-8){\includegraphics[width=10mm, height=10mm]{images/hcmut.png}}
+	\end{picture}&
+		\begin{tabular}{l}
+			\textbf{Vietnam National University, Ho Chi Minh City University Of Technology}\\
+			\textbf{Faculty Of Computer Science And Engineering}
+		\end{tabular} 	
+	\end{tabular}
+}
+
+\fancyhead[R]{
+	\begin{tabular}{l}
+		\tiny \bf \\
+		\tiny \bf 
+	\end{tabular}  }
+
+\fancyfoot{} % xóa footer mặc định
+\fancyfoot[L]{\scriptsize  Mật mã học và Mã hóa Thông tin - HK251}
+\fancyfoot[R]{\scriptsize  Trang {\thepage}/\pageref{LastPage}}
+
+\renewcommand{\headrulewidth}{0.3pt}
+\renewcommand{\footrulewidth}{0.3pt}
+
+%%%
+\setcounter{secnumdepth}{4}
+\setcounter{tocdepth}{3}
+\makeatletter
+\newcounter {subsubsubsection}[subsubsection]
+\renewcommand\thesubsubsubsection{\thesubsubsection .\@alph\c@subsubsubsection}
+\newcommand\subsubsubsection{\@startsection{subsubsubsection}{4}{\z@}%
+									{-3.25ex\@plus -1ex \@minus -.2ex}%
+									{1.5ex \@plus .2ex}%
+									{\normalfont\normalsize\bfseries}}
+\newcommand*\l@subsubsubsection{\@dottedtocline{3}{10.0em}{4.1em}}
+\newcommand*{\subsubsubsectionmark}[1]{}
+\makeatother
+
+% ===== Thiết lập màu công thức, khoảng cách, caption, khoảng cách hình/bảng =====
+\everymath{\color{black}}
+\sloppy
+\captionsetup[figure]{labelfont={small,bf},textfont={small,it},belowskip=-1pt,aboveskip=-9pt}
+\captionsetup[table]{labelfont={small,bf},textfont={small,it},belowskip=-1pt,aboveskip=7pt}
+\setlength{\floatsep}{5pt plus 2pt minus 2pt}
+\setlength{\textfloatsep}{5pt plus 2pt minus 2pt}
+\setlength{\intextsep}{10pt plus 2pt minus 2pt}
+
+\thesislayout
+\onehalfspacing
+
+% ===== Bắt đầu tài liệu =====
+\onehalfspacing
+\begin{document}
+
+% ===== Trang tiêu đề (khung viền, logo, tên môn, tiêu đề) =====
+\begin{titlepage}
+\begin{tikzpicture}[remember picture, overlay]
+	\draw[line width = 4pt] ($(current page.north west) + (0.4in,-0.5in)$) rectangle ($(current page.south east) + (-0.4in,0.5in)$);
+	\draw[line width=1.5pt]
+		($ (current page.north west) + (0.45in,-0.55in) $)
+		rectangle
+		($ (current page.south east) + (-0.45in,0.55in) $);
+\end{tikzpicture}
+
+\begin{center}
+	\Large \textbf{VIETNAM NATIONAL UNIVERSITY, HO CHI MINH CITY UNIVERSITY OF TECHNOLOGY} \\
+	\Large \textbf{FACULTY OF COMPUTER SCIENCE AND ENGINEERING}
+\end{center}
+
+\vspace{0.2cm}
+
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[width=6cm]{images/hcmut.png}
+\end{center}
+\end{figure}
+
+\begin{center}
+	\textbf{{\LARGE ADVANCE CRYPTOGRAPHY AND CODING THEORY}} \\ \vspace{0.3cm}
+	\textbf{{\LARGE (CO3083)}} \\
+\end{center}
+
+\vspace{-6pt}
+
+\rule{\textwidth - 50pt}{1pt}
+
+\begin{center}
+	\textbf{\LARGE Assignment}
+\end{center}
+
+\vspace{-6pt}
+
+\rule{\textwidth - 50pt}{1pt}
+
+\begin{table}[h]
+    % Tăng khoảng cách dòng trong bảng bằng cách sử dụng arraystretch
+    \renewcommand{\arraystretch}{2.0}
+    \begin{tabularx}{\textwidth}{@{}p{3.7cm} l >{\raggedright\arraybackslash}X l@{}}
+		& {\Large Advisor} & {\Large \dotfill} & \\
+		& {\Large Group} & {\Large \dotfill} & \\
+		& {\Large Students} & {\Large Nguyễn Tấn Tài} & {\Large 2212990} \\
+		&  & {\Large \dotfill} & {\Large \dotfill} \\
+		&  & {\Large \dotfill} & {\Large \dotfill} \\
+    \end{tabularx}
+    \renewcommand{\arraystretch}{1.0}
+\end{table}
+
+\vspace{4cm}
+
+\begin{center}
+	{\large HO CHI MINH CITY, OCTOBER 2025 }
+\end{center}
+
+\end{titlepage}
+
+\newpage
+
+% ===== Mục lục =====
+\newpage
+\tableofcontents
+\newpage
+
+% ===== Thiết lập trang và chèn nội dung chính =====
+\setcounter{page}{1}
+
+% Các file con chứa nội dung các chương/mục của báo cáo
+\input{contents/01_overview}
+\newpage
+% \input{contents/2_cp_cpa}
+% \newpage
+% \input{contents/3_collision_resistant_hash_functions}
+% \newpage
+% \input{contents/4_applied_cryptography_case_studies}
+
+\end{document}
