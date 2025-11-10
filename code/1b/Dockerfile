@@ -1,7 +1,8 @@
 # Dockerfile for minimal_polynomial_finder.py
 # Uses official SageMath image
+# Note: sagemath/sagemath only supports linux/amd64, so we use platform specification
 
-FROM sagemath/sagemath:latest
+FROM --platform=linux/amd64 sagemath/sagemath:latest
 
 # Set working directory
 WORKDIR /app

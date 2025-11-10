@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   minimal-polynomial-finder:
     build:
@@ -7,6 +5,7 @@ services:
       dockerfile: Dockerfile
     image: minimal-polynomial-finder:latest
     container_name: minimal-polynomial-finder
+    platform: linux/amd64
     # Remove container after execution
     restart: "no"
     # If you want to run interactively, uncomment the following:

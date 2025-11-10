@@ -1,4 +1,4 @@
-\subsection{Giải quyết bài toán bằng Lattice và LLL}
+\subsection{Giải quyết bài toán Tìm Đa Thức Tối Thiếu (Minimal Polynomial Finder)}
 
 \subsubsection{Đề bài}
 
@@ -53,22 +53,22 @@ Nếu $f(x) = a_2x^2 + a_1x + a_0$ là đa thức tối tiểu:
 
 $\rightarrow$ $(a_0, a_1, a_2)$ tạo ``quan hệ gần 0'' với $(1, \beta, \beta^2)$
 
-$\rightarrow$ Đây chính là bài toán SVP trong lattice!
+$\rightarrow$ Đây chính là bài toán SVP trong Lattice!
 \end{minipage}
 
 \vspace{0.5cm}
 
 \noindent\textbf{Tóm tắt:}
 
-Đề bài yêu cầu dùng lattice để tìm đa thức tối tiểu từ xấp xỉ $\rightarrow$ Xây dựng lattice mã hóa điều kiện $f(\beta) \approx 0$ $\rightarrow$ LLL tìm vectơ ngắn $\rightarrow$ Hệ số đa thức chính là tọa độ vectơ!
+Đề bài yêu cầu dùng Lattice để tìm đa thức tối tiểu từ xấp xỉ $\rightarrow$ Xây dựng Lattice mã hóa điều kiện $f(\beta) \approx 0$ $\rightarrow$ Thuật toán LLL tìm vectơ ngắn $\rightarrow$ Hệ số đa thức chính là tọa độ vectơ!
 
-\subsubsection{Lý thuyết cần nắm}
+\subsubsection{Lý thuyết}
 
-\noindent\textbf{Lattice - Công cụ chuyển đổi từ xấp xỉ sang chính xác}
+\noindent\textbf{Lattice -- Công cụ chuyển đổi từ xấp xỉ sang chính xác}
 
 \noindent\textbf{Định nghĩa Lattice cho bài toán}
 
-Lattice là gì? Trong ngữ cảnh bài toán này, lattice là tập hợp các vectơ hệ số đa thức:
+Lattice là gì? Trong ngữ cảnh bài toán này, Lattice là tập hợp các vectơ hệ số đa thức:
 $$\Lambda = \{(a_0, a_1, a_2) \in \mathbb{Z}^3 : a_0 + a_1\beta + a_2\beta^2 \approx 0\}$$
 
 \noindent\textbf{Tại sao cần lattice?}
@@ -89,17 +89,17 @@ $$B = \begin{bmatrix}
 
 \noindent\textbf{Ý nghĩa từng phần tử:}
 \begin{itemize}
-    \item \textbf{Cột 1:} Nhân với $10^{10}$ để chuyển lỗi xấp xỉ thành số nguyên (Scale factor để làm tròn)
-    \item \textbf{Cột 2, 3:} Ma trận đơn vị để giữ nguyên hệ số $a_1, a_2$ (Encoding của $\beta$ và $\beta^2$)
+    \item \textbf{Cột 1:} Nhân với $10^{10}$ để chuyển lỗi xấp xỉ thành số nguyên (hệ số scale để làm tròn)
+    \item \textbf{Cột 2, 3:} Ma trận đơn vị để giữ nguyên hệ số $a_1, a_2$ (mã hóa của $\beta$ và $\beta^2$)
 \end{itemize}
 
 \vspace{0.3cm}
 
-\noindent\textbf{Bài toán SVP - Mục tiêu cần đạt}
+\noindent\textbf{Bài toán SVP -- Mục tiêu cần đạt}
 
 \noindent\textbf{SVP trong ngữ cảnh đa thức}
 
-Bài toán: Tìm vectơ $\mathbf{v} = (v_0, v_1, v_2)$ trong lattice sao cho $\|\mathbf{v}\|$ nhỏ nhất.
+Bài toán: Tìm vectơ $\mathbf{v} = (v_0, v_1, v_2)$ trong Lattice sao cho $\|\mathbf{v}\|$ nhỏ nhất.
 
 \noindent\textbf{Kết nối với đa thức:}
 \begin{itemize}
@@ -112,7 +112,7 @@ $$20 \times 10^{10} + (-14) \times (10^{10}\beta) + 1 \times (10^{10}\beta^2) \a
 
 $\rightarrow$ Phần ``sai số'' rất nhỏ $\rightarrow$ $\|\mathbf{v}\|$ ngắn!
 
-\noindent\textbf{Gaussian Heuristic - Kiểm chứng}
+\noindent\textbf{Gaussian Heuristic -- Kiểm chứng}
 
 Công thức cho bài toán:
 $$\lambda_1 \approx \sqrt{\frac{3}{2\pi e}} \times (10^{10})^{1/3} \approx 1339$$
@@ -125,21 +125,21 @@ $$\lambda_1 \approx \sqrt{\frac{3}{2\pi e}} \times (10^{10})^{1/3} \approx 1339$
 
 \vspace{0.3cm}
 
-\noindent\textbf{Thuật toán LLL - Giải pháp khả thi}
+\noindent\textbf{Thuật toán LLL -- Giải pháp khả thi}
 
 \noindent\textbf{Tại sao cần LLL?}
 
 \begin{itemize}
     \item \textbf{Vấn đề:} Lattice 3D có vô số vectơ. Không thể thử hết!
-    \item \textbf{LLL giải quyết:}
+    \item \textbf{Thuật toán LLL giải quyết:}
     \begin{itemize}
-        \item \textbf{Input:} Cơ sở lattice ban đầu (ma trận $B$)
+        \item \textbf{Input:} Cơ sở Lattice ban đầu (ma trận $B$)
         \item \textbf{Output:} Cơ sở ``tốt'' với vectơ đầu tiên rất ngắn
-        \item \textbf{Thời gian:} $O(n^4)$ - khả thi với $n = 3$
+        \item \textbf{Thời gian:} $O(n^4)$ -- khả thi với $n = 3$
     \end{itemize}
 \end{itemize}
 
-\noindent\textbf{Gram-Schmidt - Nền tảng của LLL}
+\noindent\textbf{Gram-Schmidt -- Nền tảng của LLL}
 
 \noindent\textbf{Ý nghĩa cho bài toán:}
 
@@ -158,31 +158,31 @@ $\mathbf{b}_3 = (\ldots, 0, 1)$ & $\mathbf{b}_3^* \perp \text{span}(\mathbf{b}_1
 Hai điều kiện chính:
 \begin{itemize}
     \item \textbf{Size-reduced:} Loại bỏ ``thành phần dư'' giữa các vectơ
-    \item \textbf{Lovász condition:} Đảm bảo không có vectơ ``quá dài''
+    \item \textbf{Điều kiện Lovász:} Đảm bảo không có vectơ ``quá dài''
 \end{itemize}
 
 Kết quả: Vectơ đầu tiên của cơ sở reduced chứa hệ số đa thức!
 
-\subsubsection{Phương pháp thực hiện}
+\subsubsection{Phương pháp}
 
-Phương pháp được sử dụng là \textbf{lattice-based reconstruction} -- tìm đa thức tối tiểu của một số vô tỉ thông qua giá trị xấp xỉ $\beta$ bằng cách biểu diễn mối quan hệ gần tuyến tính giữa các lũy thừa của $\beta$ trong không gian lưới nguyên $\mathbb{Z}^n$.
+Phương pháp được sử dụng là \textbf{Lattice-based reconstruction} -- tìm đa thức tối tiểu của một số vô tỉ thông qua giá trị xấp xỉ $\beta$ bằng cách biểu diễn mối quan hệ gần tuyến tính giữa các lũy thừa của $\beta$ trong không gian Lattice nguyên $\mathbb{Z}^n$.
 
 \vspace{0.3cm}
 
-\noindent\textbf{Ý tưởng phương pháp (Lattice Approach)}
+\noindent\textbf{Ý tưởng phương pháp}
 
 Thay vì tìm trực tiếp đa thức $f(x)$ sao cho $f(\alpha) = 0$, ta sử dụng giá trị xấp xỉ $\beta \approx \alpha$ và tìm các hệ số nguyên $a_0, a_1, a_2$ thỏa mãn:
 $$|a_0 + a_1\beta + a_2\beta^2| \approx 0$$
 
-Tập hợp các vectơ nguyên $(a_0, a_1, a_2)$ tạo thành một lattice. Khi đó, vectơ ngắn nhất trong lattice (theo chuẩn Euclid) sẽ biểu diễn đúng mối quan hệ gần bằng 0 giữa các lũy thừa của $\beta$, tức là hệ số của đa thức tối tiểu cần tìm.
+Tập hợp các vectơ nguyên $(a_0, a_1, a_2)$ tạo thành một Lattice. Khi đó, vectơ ngắn nhất trong Lattice (theo chuẩn Euclid) sẽ biểu diễn đúng mối quan hệ gần bằng 0 giữa các lũy thừa của $\beta$, tức là hệ số của đa thức tối tiểu cần tìm.
 
-Để tìm vectơ này, ta sử dụng thuật toán LLL (Lenstra--Lenstra--Lovász) nhằm rút gọn cơ sở lattice và phát hiện vectơ ngắn nhất.
+Để tìm vectơ này, ta sử dụng thuật toán LLL (Lenstra--Lenstra--Lovász) nhằm rút gọn cơ sở Lattice và phát hiện vectơ ngắn nhất.
 
 \vspace{0.3cm}
 
-\noindent\textbf{Cách xây dựng ma trận lattice}
+\noindent\textbf{Cách xây dựng ma trận Lattice}
 
-Với đa thức bậc 2: $f(x) = a_2x^2 + a_1x + a_0$, lattice cần ba chiều để biểu diễn ba hệ số. Ma trận cơ sở $B \in \mathbb{Z}^{3 \times 3}$ được thiết lập như sau:
+Với đa thức bậc 2: $f(x) = a_2x^2 + a_1x + a_0$, Lattice cần ba chiều để biểu diễn ba hệ số. Ma trận cơ sở $B \in \mathbb{Z}^{3 \times 3}$ được thiết lập như sau:
 
 $$B = \begin{bmatrix}
 10^k & 0 & 0 \\
@@ -192,12 +192,12 @@ $$B = \begin{bmatrix}
 
 \noindent\textbf{Trong đó:}
 \begin{itemize}
-    \item \textbf{Cột thứ nhất:} chứa các giá trị thực $(1, \beta, \beta^2)$ đã được nhân với hệ số lớn $10^k$ để đưa về miền số nguyên.
-    \item \textbf{Hai cột còn lại:} tạo khung đơn vị, giúp bảo toàn thông tin của hệ số $a_1, a_2$.
-    \item \textbf{Mỗi hàng} tương ứng với một cấp lũy thừa của $\beta$: $1, \beta, \beta^2$.
+    \item \textbf{Cột thứ nhất:} Chứa các giá trị thực $(1, \beta, \beta^2)$ đã được nhân với hệ số lớn $10^k$ để đưa về miền số nguyên.
+    \item \textbf{Hai cột còn lại:} Tạo khung đơn vị, giúp bảo toàn thông tin của hệ số $a_1, a_2$.
+    \item \textbf{Mỗi hàng:} Tương ứng với một cấp lũy thừa của $\beta$: $1, \beta, \beta^2$.
 \end{itemize}
 
-Bằng cách nhân ma trận này với vectơ nguyên $(n_1, n_2, n_3)$, ta thu được vectơ $(n_1C, n_1C\beta + n_2, n_1C\beta^2 + n_3)$. Nếu tồn tại mối quan hệ gần đúng $a_0 + a_1\beta + a_2\beta^2 \approx 0$, thì vectơ tương ứng sẽ có độ dài nhỏ, và sẽ được LLL phát hiện.
+Bằng cách nhân ma trận này với vectơ nguyên $(n_1, n_2, n_3)$, ta thu được vectơ $(n_1C, n_1C\beta + n_2, n_1C\beta^2 + n_3)$. Nếu tồn tại mối quan hệ gần đúng $a_0 + a_1\beta + a_2\beta^2 \approx 0$, thì vectơ tương ứng sẽ có độ dài nhỏ, và sẽ được thuật toán LLL phát hiện.
 
 \vspace{0.3cm}
 
@@ -217,11 +217,12 @@ Hệ số $k = 10$ đảm bảo rằng:
 \noindent\textbf{Quy trình thực hiện}
 
 \begin{enumerate}
-    \item Tính $\beta = 7 + \sqrt{29}$ với độ chính xác 10 chữ số.
-    \item Xây dựng ma trận $B$ theo công thức trên, dùng $k = 10$.
-    \item Áp dụng thuật toán LLL để rút gọn lattice.
-    \item Lấy vectơ ngắn nhất trong ma trận rút gọn làm hệ số $(a_0, a_1, a_2)$.
-    \item Chuẩn hóa và suy ra đa thức tối tiểu $f(x) = a_2x^2 + a_1x + a_0$.
+    \item \textbf{Tính $\beta$ từ $\alpha$:} Tính $\beta = 7 + \sqrt{29}$ với độ chính xác 10 chữ số thập phân. Trong SageMath, ta sử dụng $\beta = \text{N}(7 + \sqrt{29}, 12)$ để đảm bảo có đủ 10 chữ số thập phân chính xác.
+    \item \textbf{Xây dựng ma trận Lattice:} Xây dựng ma trận $B$ theo công thức trên, dùng $k = 10$ (tương ứng với $C = 10^{10}$).
+    \item \textbf{Áp dụng thuật toán LLL:} Áp dụng thuật toán LLL để rút gọn cơ sở Lattice, tìm cơ sở LLL-reduced.
+    \item \textbf{Trích xuất hệ số:} Lấy vectơ ngắn nhất (vectơ đầu tiên) trong ma trận rút gọn làm hệ số. Vectơ này có dạng $(v_0, v_1, v_2)$ với $v_0 = a_0 \times 10^{10}$ (do scale factor).
+    \item \textbf{Chuẩn hóa hệ số:} Chuẩn hóa bằng cách chia $v_0$ cho $10^{10}$ để thu được $a_0$, và lấy $a_1 = v_1$, $a_2 = v_2$. Suy ra đa thức tối tiểu $f(x) = a_2x^2 + a_1x + a_0$.
+    \item \textbf{Xác minh kết quả:} Kiểm tra $f(\alpha) = 0$ để xác nhận đa thức tìm được là đúng.
 \end{enumerate}
 
 \vspace{0.3cm}
@@ -230,15 +231,26 @@ Hệ số $k = 10$ đảm bảo rằng:
 
 $$f(x) = x^2 - 14x + 20$$
 
-là đa thức tối tiểu thỏa mãn $\alpha = 7 + \sqrt{29}$.
+\noindent\textbf{Chứng minh $f(x)$ là đa thức tối tiểu:}
 
-\subsubsection{Thực thi Code}
+Để chứng minh $f(x) = x^2 - 14x + 20$ là đa thức tối tiểu của $\alpha = 7 + \sqrt{29}$, ta cần kiểm tra:
+\begin{enumerate}
+    \item $f(\alpha) = 0$: Thay $\alpha = 7 + \sqrt{29}$ vào $f(x)$:
+    $$f(\alpha) = (7 + \sqrt{29})^2 - 14(7 + \sqrt{29}) + 20$$
+    $$= 49 + 14\sqrt{29} + 29 - 98 - 14\sqrt{29} + 20 = 0$$
+    \item $f(x)$ bất khả quy trên $\mathbb{Q}$: Nếu $f(x)$ có nghiệm hữu tỉ, thì nghiệm đó phải là ước của 20. Kiểm tra các ước $\pm 1, \pm 2, \pm 4, \pm 5, \pm 10, \pm 20$ đều không phải nghiệm của $f(x)$. Do đó $f(x)$ bất khả quy trên $\mathbb{Q}$.
+    \item Bậc của $f(x)$ là nhỏ nhất: Vì $\alpha = 7 + \sqrt{29}$ là số đại số bậc 2 (do $\sqrt{29}$ là số vô tỉ bậc 2), nên đa thức tối tiểu của $\alpha$ phải có bậc ít nhất là 2. Vì $f(x)$ có bậc 2 và thỏa mãn $f(\alpha) = 0$, nên $f(x)$ là đa thức tối tiểu của $\alpha$.
+\end{enumerate}
+
+Vậy $f(x) = x^2 - 14x + 20$ là đa thức tối tiểu của $\alpha = 7 + \sqrt{29}$.
+
+\subsubsection{Thực thi}
 
 \noindent\textbf{Mục tiêu}
 
-Phần này trình bày cách hiện thực hóa phương pháp \textbf{lattice-based reconstruction} bằng ngôn ngữ \textbf{Python (SageMath)}. Mục tiêu là khôi phục \textbf{đa thức tối tiểu} $f(x)$ của $\alpha = 7 + \sqrt{29}$ dựa trên giá trị xấp xỉ $\beta$ bằng cách:
+Phần này trình bày cách hiện thực hóa phương pháp \textbf{Lattice-based reconstruction} bằng ngôn ngữ \textbf{Python (SageMath)}. Mục tiêu là khôi phục \textbf{đa thức tối tiểu} $f(x)$ của $\alpha = 7 + \sqrt{29}$ dựa trên giá trị xấp xỉ $\beta$ bằng cách:
 \begin{itemize}
-    \item Xây dựng ma trận lattice,
+    \item Xây dựng ma trận Lattice,
     \item Áp dụng thuật toán LLL để tìm vectơ ngắn nhất,
     \item Trích xuất hệ số đa thức,
     \item Và kiểm thử tính đúng đắn của kết quả.
@@ -479,21 +491,21 @@ Các hàm kiểm thử (\texttt{verify\_exact\_root}, \texttt{verify\_approximat
 
 \noindent\textbf{Kết luận}
 
-Đoạn mã trên minh họa trọn vẹn quá trình \textbf{khôi phục đa thức tối tiểu từ giá trị xấp xỉ của nghiệm} bằng phương pháp lattice. Thuật toán LLL hoạt động hiệu quả, giúp phát hiện ra mối quan hệ tuyến tính ẩn giữa $(1, \beta, \beta^2)$, và kết quả khớp hoàn toàn với giá trị lý thuyết:
+Đoạn mã trên minh họa trọn vẹn quá trình \textbf{khôi phục đa thức tối tiểu từ giá trị xấp xỉ của nghiệm} bằng phương pháp Lattice. Thuật toán LLL hoạt động hiệu quả, giúp phát hiện ra mối quan hệ tuyến tính ẩn giữa $(1, \beta, \beta^2)$, và kết quả khớp hoàn toàn với giá trị lý thuyết:
 
 $$f(x) = x^2 - 14x + 20$$
 
 \vspace{0.5cm}
 
-\subsubsection{Phương pháp kiểm thử}
+\subsubsection{Kiểm thử}
 
 \noindent\textbf{Mục tiêu kiểm thử}
 
 Mục tiêu của kiểm thử là xác nhận rằng:
 \begin{enumerate}
     \item Đa thức thu được thật sự \textbf{là đa thức tối tiểu của $\alpha$}, không chỉ là một nghiệm gần đúng.
-    \item Phương pháp lattice và thuật toán LLL được triển khai \textbf{cho kết quả ổn định và chính xác} khi đầu vào là giá trị xấp xỉ $\beta$.
-    \item Độ dài của vectơ thu được \textbf{phù hợp với Gaussian heuristic}, đảm bảo kết quả là vectơ ngắn thật sự trong không gian lưới.
+    \item Phương pháp Lattice và thuật toán LLL được triển khai \textbf{cho kết quả ổn định và chính xác} khi đầu vào là giá trị xấp xỉ $\beta$.
+    \item Độ dài của vectơ thu được \textbf{phù hợp với Gaussian Heuristic}, đảm bảo kết quả là vectơ ngắn thật sự trong không gian Lattice.
 \end{enumerate}
 
 \vspace{0.3cm}
@@ -514,12 +526,12 @@ Mục tiêu của kiểm thử là xác nhận rằng:
     \item Thay $\beta \approx \alpha$ (với 10 chữ số thập phân) vào $f(x)$.
     \item Tính sai số:
     $$|f(\beta)| = |a_0 + a_1\beta + a_2\beta^2|$$
-    \item Sai số càng nhỏ $\rightarrow$ mô hình lattice hoạt động tốt, chứng minh rằng $\beta$ thật sự gần nghiệm của $f(x)$.
+    \item Sai số càng nhỏ $\rightarrow$ mô hình Lattice hoạt động tốt, chứng minh rằng $\beta$ thật sự gần nghiệm của $f(x)$.
 \end{itemize}
 
-\noindent\textbf{(c) Kiểm chứng độ dài vectơ bằng Gaussian heuristic}
+\noindent\textbf{(c) Kiểm chứng độ dài vectơ bằng Gaussian Heuristic}
 \begin{itemize}
-    \item So sánh độ dài của vectơ tìm được với độ dài kỳ vọng của vectơ ngắn nhất trong lattice 3 chiều:
+    \item So sánh độ dài của vectơ tìm được với độ dài kỳ vọng của vectơ ngắn nhất trong Lattice 3 chiều:
     $$L_{\text{expected}} = \sqrt{\frac{n}{2\pi e}} \cdot (\det \Lambda)^{1/n}$$
     \item Nếu độ dài thực tế nhỏ hơn hoặc cùng bậc với giá trị dự kiến, kết quả được xem là \textbf{tối ưu và đáng tin cậy}.
 \end{itemize}
@@ -532,7 +544,7 @@ Một phép kiểm thử được xem là \textbf{đạt} khi thỏa đồng th�
 \begin{enumerate}
     \item $f(\alpha) = 0$ chính xác (xác minh nghiệm thật).
     \item $|f(\beta)| < 10^{-8}$ (xác minh xấp xỉ chính xác).
-    \item $0.1 < (\|\mathbf{v}_{\text{thực}}\| / L_{\text{expected}}) < 10$ (vectơ thu được có độ dài hợp lý theo Gaussian heuristic).
+    \item $0.1 < (\|\mathbf{v}_{\text{thực}}\| / L_{\text{expected}}) < 10$ (vectơ thu được có độ dài hợp lý theo Gaussian Heuristic).
 \end{enumerate}
 
 \vspace{0.3cm}
@@ -543,7 +555,7 @@ Tất cả các phép kiểm thử đều đạt yêu cầu:
 \begin{itemize}
     \item $f(\alpha) = 0$ đúng tuyệt đối,
     \item $|f(\beta)| = 3.7 \times 10^{-9}$,
-    \item Vectơ thu được có tỉ lệ Gaussian heuristic $\approx 0.13$ (rất nhỏ).
+    \item Vectơ thu được có tỉ lệ Gaussian Heuristic $\approx 0.13$ (rất nhỏ).
 \end{itemize}
 
-$\rightarrow$ Kết quả chứng minh rằng \textbf{phương pháp lattice và thuật toán LLL hoạt động chính xác}, và đa thức $f(x) = x^2 - 14x + 20$ đúng là đa thức tối tiểu của $\alpha = 7 + \sqrt{29}$.
+$\rightarrow$ Kết quả chứng minh rằng \textbf{phương pháp Lattice và thuật toán LLL hoạt động chính xác}, và đa thức $f(x) = x^2 - 14x + 20$ đúng là đa thức tối tiểu của $\alpha = 7 + \sqrt{29}$.
