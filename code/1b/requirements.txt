@@ -1,0 +1,26 @@
+# Requirements for minimal_polynomial_finder.py
+#
+# Note: This code requires SageMath (https://www.sagemath.org/)
+# SageMath is not a standard Python package and must be installed separately.
+#
+# Installation options:
+# 1. Download and install from https://www.sagemath.org/download.html
+# 2. Use conda: conda install -c conda-forge sage
+# 3. Use Docker: docker pull sagemath/sagemath
+#
+# The code uses the following SageMath modules:
+# - sage.all (provides Matrix, ZZ, var, sqrt, N, etc.)
+#
+# Standard Python libraries used:
+# - math (for mathematical constants and functions)
+
+# If using SageMath's Python environment, no additional packages are needed.
+# If running in a standard Python environment, you would need to install:
+# (However, SageMath provides its own Python environment with all dependencies)
+
+# For reference, SageMath includes:
+# - NumPy
+# - SciPy
+# - SymPy
+# - Matplotlib
+# - And many other scientific computing libraries
