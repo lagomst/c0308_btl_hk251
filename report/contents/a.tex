@@ -1,0 +1,221 @@
+
+\section{a}
+
+\subsection{Các khái niệm cơ bản}
+
+\subsubsection{Không gian vector (Vector Spaces)}
+
+\noindent\textbf{Định nghĩa (Không gian vector):}
+Một \textbf{không gian vector} (vector space) trên trường $\mathbb{F}$ là một tập hợp $V$ cùng với hai phép toán:
+\begin{itemize}
+    \item Phép cộng vector: $+: V \times V \to V$
+    \item Phép nhân vô hướng: $\cdot: \mathbb{F} \times V \to V$
+\end{itemize}
+thỏa mãn các tiên đề sau với mọi $\mathbf{u}, \mathbf{v}, \mathbf{w} \in V$ và $a, b \in \mathbb{F}$:
+\begin{enumerate}
+    \item $\mathbf{u} + \mathbf{v} = \mathbf{v} + \mathbf{u}$ (tính giao hoán)
+    \item $(\mathbf{u} + \mathbf{v}) + \mathbf{w} = \mathbf{u} + (\mathbf{v} + \mathbf{w})$ (tính kết hợp)
+    \item Tồn tại vector không $\mathbf{0} \in V$ sao cho $\mathbf{v} + \mathbf{0} = \mathbf{v}$
+    \item Với mọi $\mathbf{v} \in V$, tồn tại $-\mathbf{v} \in V$ sao cho $\mathbf{v} + (-\mathbf{v}) = \mathbf{0}$
+    \item $a(b\mathbf{v}) = (ab)\mathbf{v}$
+    \item $1\mathbf{v} = \mathbf{v}$
+    \item $a(\mathbf{u} + \mathbf{v}) = a\mathbf{u} + a\mathbf{v}$
+    \item $(a + b)\mathbf{v} = a\mathbf{v} + b\mathbf{v}$
+\end{enumerate}
+
+\textit{Ví dụ:} Không gian Euclide $n$ chiều $\mathbb{R}^n$ với phép cộng và nhân vô hướng thông thường là một không gian vector trên trường số thực $\mathbb{R}$.
+
+\subsubsection{Tổ hợp tuyến tính (Linear Combinations)}
+
+\noindent\textbf{Định nghĩa (Tổ hợp tuyến tính):}
+Cho $V$ là không gian vector trên trường $\mathbb{F}$ và $\mathbf{v}_1, \mathbf{v}_2, \ldots, \mathbf{v}_n \in V$. Một \textbf{tổ hợp tuyến tính} (linear combination) của các vector này là một vector có dạng:
+$$\mathbf{v} = a_1\mathbf{v}_1 + a_2\mathbf{v}_2 + \cdots + a_n\mathbf{v}_n$$
+trong đó $a_1, a_2, \ldots, a_n \in \mathbb{F}$ được gọi là các hệ số.
+
+\subsubsection{Độc lập tuyến tính (Independence)}
+
+\noindent\textbf{Định nghĩa (Độc lập tuyến tính):}
+Một tập hợp các vector $\{\mathbf{v}_1, \mathbf{v}_2, \ldots, \mathbf{v}_n\}$ trong không gian vector $V$ được gọi là \textbf{độc lập tuyến tính} (linearly independent) nếu phương trình:
+$$a_1\mathbf{v}_1 + a_2\mathbf{v}_2 + \cdots + a_n\mathbf{v}_n = \mathbf{0}$$
+kéo theo $a_1 = a_2 = \cdots = a_n = 0$.
+
+Ngược lại, nếu tồn tại các hệ số $a_1, \ldots, a_n$ không đồng thời bằng 0 sao cho tổ hợp tuyến tính trên bằng $\mathbf{0}$, thì tập vector đó được gọi là \textbf{phụ thuộc tuyến tính} (linearly dependent).
+
+\subsubsection{Cơ sở (Bases)}
+
+\noindent\textbf{Định nghĩa (Cơ sở của không gian vector):}
+Một tập hợp các vector $\mathcal{B} = \{\mathbf{v}_1, \mathbf{v}_2, \ldots, \mathbf{v}_n\}$ được gọi là một \textbf{cơ sở} (basis) của không gian vector $V$ nếu:
+\begin{enumerate}
+    \item $\mathcal{B}$ độc lập tuyến tính
+    \item Mọi vector $\mathbf{v} \in V$ đều có thể biểu diễn duy nhất dưới dạng tổ hợp tuyến tính của các vector trong $\mathcal{B}$
+\end{enumerate}
+
+Số lượng vector trong một cơ sở được gọi là \textbf{số chiều} (dimension) của không gian vector.
+
+\subsubsection{Cơ sở trực giao và trực chuẩn (Orthogonal and Orthonormal Basis)}
+
+\begin{definition}[Tích vô hướng]
+Trong không gian Euclide $\mathbb{R}^n$, tích vô hướng (inner product hoặc dot product) của hai vector $\mathbf{u} = (u_1, \ldots, u_n)$ và $\mathbf{v} = (v_1, \ldots, v_n)$ được định nghĩa là:
+$$\langle \mathbf{u}, \mathbf{v} \rangle = u_1v_1 + u_2v_2 + \cdots + u_nv_n$$
+\end{definition}
+
+\begin{definition}[Cơ sở trực giao]
+Một cơ sở $\mathcal{B} = \{\mathbf{v}_1, \mathbf{v}_2, \ldots, \mathbf{v}_n\}$ của không gian vector $V$ được gọi là \textbf{cơ sở trực giao} (orthogonal basis) nếu:
+$$\langle \mathbf{v}_i, \mathbf{v}_j \rangle = 0 \quad \text{với mọi } i \neq j$$
+\end{definition}
+
+\begin{definition}[Cơ sở trực chuẩn]
+Một cơ sở trực giao $\mathcal{B} = \{\mathbf{v}_1, \mathbf{v}_2, \ldots, \mathbf{v}_n\}$ được gọi là \textbf{cơ sở trực chuẩn} (orthonormal basis) nếu ngoài tính trực giao, mỗi vector có độ dài bằng 1:
+$$\|\mathbf{v}_i\| = \sqrt{\langle \mathbf{v}_i, \mathbf{v}_i \rangle} = 1 \quad \text{với mọi } i$$
+Tương đương:
+$$\langle \mathbf{v}_i, \mathbf{v}_j \rangle = \delta_{ij} = \begin{cases} 1 & \text{nếu } i = j \\ 0 & \text{nếu } i \neq j \end{cases}$$
+\end{definition}
+
+\textit{Ví dụ:} Cơ sở chuẩn tắc (standard basis) của $\mathbb{R}^3$ là:
+$$\mathbf{e}_1 = (1,0,0), \quad \mathbf{e}_2 = (0,1,0), \quad \mathbf{e}_3 = (0,0,1)$$
+là một cơ sở trực chuẩn.
+
+\subsubsection{Lattice (Mạng tinh thể)}
+
+\begin{definition}[Lattice]
+Cho $\mathbf{v}_1, \mathbf{v}_2, \ldots, \mathbf{v}_n \in \mathbb{R}^m$ là các vector độc lập tuyến tính. \textbf{Lattice} $L$ sinh bởi các vector này, ký hiệu $L = L(\mathbf{v}_1, \ldots, \mathbf{v}_n)$, là tập hợp tất cả các tổ hợp tuyến tính nguyên của chúng:
+$$L = \left\{ a_1\mathbf{v}_1 + a_2\mathbf{v}_2 + \cdots + a_n\mathbf{v}_n : a_1, a_2, \ldots, a_n \in \mathbb{Z} \right\}$$
+
+Tập $\{\mathbf{v}_1, \ldots, \mathbf{v}_n\}$ được gọi là một \textbf{cơ sở} (basis) của lattice $L$. Số $n$ được gọi là \textbf{hạng} (rank) của lattice, và số $m$ được gọi là \textbf{số chiều} (dimension) của không gian chứa lattice.
+\end{definition}
+
+\textbf{Lưu ý quan trọng:}
+\begin{itemize}
+    \item Lattice là một cấu trúc \textbf{rời rạc} (discrete), không phải không gian vector liên tục
+    \item Các hệ số trong tổ hợp tuyến tính phải là \textbf{số nguyên} $\mathbb{Z}$, không phải số thực $\mathbb{R}$
+    \item Một lattice có thể có nhiều cơ sở khác nhau
+    \item Không gian vector luôn có cơ sở trực giao, nhưng lattice thường \textbf{không có} cơ sở trực giao
+\end{itemize}
+
+\subsubsection{Miền cơ bản (Fundamental Domain)}
+
+\begin{definition}[Hình bình hành cơ bản]
+Cho lattice $L$ có cơ sở $\mathcal{B} = \{\mathbf{v}_1, \ldots, \mathbf{v}_n\}$. \textbf{Hình bình hành cơ bản} (fundamental parallelepiped) được định nghĩa là:
+$$\mathcal{P}(\mathcal{B}) = \left\{ t_1\mathbf{v}_1 + \cdots + t_n\mathbf{v}_n : 0 \le t_i < 1 \right\}$$
+\end{definition}
+
+\begin{definition}[Miền cơ bản]
+\textbf{Miền cơ bản} (fundamental domain) của lattice là một vùng không gian sao cho:
+\begin{enumerate}
+    \item Khi tịnh tiến theo các vector của lattice, các bản sao của miền cơ bản phủ kín toàn bộ không gian $\mathbb{R}^n$
+    \item Các bản sao này không chồng lấn nhau (trừ tại biên)
+\end{enumerate}
+\end{definition}
+
+\textbf{Thể tích:} Thể tích của miền cơ bản không phụ thuộc vào cách chọn cơ sở. Với cơ sở $\mathcal{B} = \{\mathbf{v}_1, \ldots, \mathbf{v}_n\}$ biểu diễn dưới dạng ma trận $B$ (mỗi cột là một vector cơ sở), ta có:
+$$\text{vol}(L) = |\det(B^T B)|^{1/2}$$
+Đối với lattice đầy đủ hạng trong $\mathbb{R}^n$: $\text{vol}(L) = |\det(B)|$.
+
+\subsubsection{Quả cầu Euclide (The Euclidean Ball)}
+
+\begin{definition}[Quả cầu Euclide]
+Trong không gian Euclide $\mathbb{R}^n$, \textbf{quả cầu đóng} (closed Euclidean ball) tâm $\mathbf{c}$ bán kính $r$ được định nghĩa là:
+$$B_r(\mathbf{c}) = \{\mathbf{x} \in \mathbb{R}^n : \|\mathbf{x} - \mathbf{c}\| \le r\}$$
+trong đó $\|\mathbf{x}\| = \sqrt{x_1^2 + \cdots + x_n^2}$ là chuẩn Euclide.
+\end{definition}
+
+\textbf{Thể tích của quả cầu $n$ chiều:}
+$$\text{Vol}(B_r(\mathbf{0})) = \frac{\pi^{n/2}}{\Gamma(n/2 + 1)} r^n$$
+trong đó $\Gamma$ là hàm gamma.
+
+\subsubsection{Bài toán vector ngắn nhất (The Shortest Vector Problem - SVP)}
+
+\begin{problem}[SVP]
+Cho một lattice $L$ với cơ sở $\mathcal{B} = \{\mathbf{v}_1, \ldots, \mathbf{v}_n\}$. \textbf{Bài toán vector ngắn nhất} (Shortest Vector Problem - SVP) yêu cầu tìm một vector khác không $\mathbf{v} \in L$ có độ dài Euclide nhỏ nhất:
+$$\mathbf{v}^* \in \arg\min_{\mathbf{v} \in L \setminus \{\mathbf{0}\}} \|\mathbf{v}\|$$
+
+Độ dài nhỏ nhất này được ký hiệu là $\lambda_1(L) = \min_{\mathbf{v} \in L \setminus \{\mathbf{0}\}} \|\mathbf{v}\|$.
+\end{problem}
+
+\textbf{Độ phức tạp:} SVP là bài toán NP-khó (NP-hard) theo các phép rút gọn ngẫu nhiên. Điều này có nghĩa là không có thuật toán hiệu quả (thời gian đa thức) để giải quyết SVP một cách chính xác trong trường hợp tổng quát.
+
+\subsubsection{Bài toán vector gần nhất (The Closest Vector Problem - CVP)}
+
+\begin{problem}[CVP]
+Cho một lattice $L$ với cơ sở $\mathcal{B}$ và một vector đích $\mathbf{w} \in \mathbb{R}^n$ (không nhất thiết thuộc $L$). \textbf{Bài toán vector gần nhất} (Closest Vector Problem - CVP) yêu cầu tìm vector $\mathbf{v} \in L$ sao cho khoảng cách từ $\mathbf{v}$ đến $\mathbf{w}$ là nhỏ nhất:
+$$\mathbf{v}^* \in \arg\min_{\mathbf{v} \in L} \|\mathbf{v} - \mathbf{w}\|$$
+\end{problem}
+
+\textbf{Độ phức tạp:} CVP cũng là bài toán NP-khó. Thực tế, CVP thường được coi là khó hơn SVP.
+
+\textbf{Mối quan hệ giữa SVP và CVP:} SVP có thể được xem như trường hợp đặc biệt của CVP khi $\mathbf{w} = \mathbf{0}$, nhưng việc rút gọn từ CVP sang SVP hay ngược lại không đơn giản.
+
+\subsubsection{Độ dài ngắn nhất kỳ vọng theo Gauss (The Gaussian Expected Shortest Length)}
+
+\begin{definition}[Giả thuyết Gauss]
+\textbf{Giả thuyết Gauss} (Gaussian Heuristic) dự đoán độ dài của vector ngắn nhất trong lattice $L \subset \mathbb{R}^n$ có thể tích $\text{vol}(L)$ như sau:
+$$\lambda_1(L) \approx \text{gh}(L) = \sqrt{\frac{n}{2\pi e}} \cdot \text{vol}(L)^{1/n}$$
+\end{definition}
+
+\textbf{Ý nghĩa:}
+\begin{itemize}
+    \item Giả thuyết Gauss dựa trên ý tưởng rằng số điểm lattice trong một vùng đo được $B \subset \mathbb{R}^n$ xấp xỉ $\text{Vol}(B) / \text{vol}(L)$
+    \item Áp dụng cho quả cầu Euclide, ta có thể ước lượng bán kính của quả cầu nhỏ nhất chứa ít nhất một điểm lattice khác không
+    \item Đây là một \textbf{giả thuyết} (heuristic), không phải định lý chính xác, nhưng đã được chứng minh đúng với hầu hết các lattice khi số chiều $n$ đủ lớn
+    \item Giả thuyết Gauss được sử dụng rộng rãi trong các thuật toán rút gọn lattice và mã hóa dựa trên lattice
+\end{itemize}
+
+\textbf{Công thức tương đương:}
+$$\text{gh}(L) = \sqrt{\frac{2n}{\pi e}} \cdot \text{vol}(L)^{1/n}$$
+
+\subsubsection{Thuật toán LLL (The LLL Algorithm)}
+
+\begin{definition}[Thuật toán LLL]
+\textbf{Thuật toán LLL} (Lenstra-Lenstra-Lovász algorithm) là một thuật toán rút gọn cơ sở lattice được phát minh bởi Arjen Lenstra, Hendrik Lenstra và László Lovász năm 1982. Thuật toán này tìm một cơ sở "rút gọn" của lattice trong thời gian đa thức.
+\end{definition}
+
+\textbf{Mục tiêu:} Cho lattice $L$ với cơ sở $\mathcal{B} = \{\mathbf{v}_1, \ldots, \mathbf{v}_n\}$ tùy ý, thuật toán LLL tìm một cơ sở mới $\{\mathbf{b}_1, \ldots, \mathbf{b}_n\}$ sao cho các vector cơ sở:
+\begin{itemize}
+    \item Tương đối ngắn
+    \item Gần như trực giao với nhau
+\end{itemize}
+
+\textbf{Điều kiện LLL-rút gọn:}
+
+Một cơ sở $\{\mathbf{b}_1, \ldots, \mathbf{b}_n\}$ được gọi là LLL-rút gọn nếu thỏa mãn hai điều kiện:
+
+\begin{enumerate}
+    \item \textbf{Điều kiện kích thước:} Với quá trình trực giao hóa Gram-Schmidt $\{\mathbf{b}_1^*, \ldots, \mathbf{b}_n^*\}$, các hệ số $\mu_{i,j}$ thỏa mãn:
+    $$|\mu_{i,j}| \le \frac{1}{2} \quad \text{với mọi } 1 \le j < i \le n$$
+    trong đó $\mu_{i,j} = \frac{\langle \mathbf{b}_i, \mathbf{b}_j^* \rangle}{\langle \mathbf{b}_j^*, \mathbf{b}_j^* \rangle}$
+
+    \item \textbf{Điều kiện Lovász:}
+    $$\|\mathbf{b}_i^*\|^2 \ge \left(\delta - \mu_{i,i-1}^2\right) \|\mathbf{b}_{i-1}^*\|^2$$
+    với mọi $1 < i \le n$, trong đó $\delta$ là tham số (thường chọn $\delta = 3/4$)
+\end{enumerate}
+
+\textbf{Độ phức tạp và chất lượng:}
+\begin{itemize}
+    \item Thuật toán LLL chạy trong thời gian đa thức: $O(n^5 \log^3 B)$ trong đó $B$ là giới hạn trên của độ dài các vector cơ sở đầu vào
+    \item Vector đầu tiên $\mathbf{b}_1$ của cơ sở LLL-rút gọn thỏa mãn:
+    $$\|\mathbf{b}_1\| \le 2^{(n-1)/4} \cdot \lambda_1(L)$$
+    tức là xấp xỉ vector ngắn nhất với hệ số $2^{(n-1)/4}$
+    \item Với $\delta = 3/4$, ta có: $\|\mathbf{b}_1\| \le (2/\sqrt{3})^{n-1} \cdot \text{vol}(L)^{1/n}$
+\end{itemize}
+
+\textbf{Ứng dụng:}
+\begin{itemize}
+    \item Phân tích đa thức với hệ số hữu tỉ
+    \item Tìm xấp xỉ hữu tỉ đồng thời cho các số thực
+    \item Giải bài toán quy hoạch tuyến tính nguyên trong số chiều cố định
+    \item Tấn công mật mã: hệ mật knapsack, RSA với tham số đặc biệt, NTRU, v.v.
+    \item Thuật toán phát hiện tín hiệu MIMO
+    \item Thuật toán tìm quan hệ số nguyên
+\end{itemize}
+
+\begin{thebibliography}{99}
+\bibitem{HPS08} J. Hoffstein, J. Pipher, and J.H. Silverman. \textit{An Introduction to Mathematical Cryptography}. Undergraduate Texts in Mathematics. Springer, 2008.
+
+\bibitem{LLL82} A. K. Lenstra, H. W. Lenstra, Jr., and L. Lovász. \textit{Factoring polynomials with rational coefficients}. Mathematische Annalen, 261(4):515–534, 1982.
+
+\bibitem{Regev04} O. Regev. \textit{Lattices in Computer Science: Lecture Notes}. Tel Aviv University, 2004.
+
+\bibitem{Micciancio08} D. Micciancio and O. Regev. \textit{Lattice-based Cryptography}. In Post-Quantum Cryptography, pages 147–191. Springer, 2008.
+\end{thebibliography}
+
+\end{document}
