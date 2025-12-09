@@ -87,10 +87,8 @@ This guide outlines the steps to configure an Android 14 (API 34) emulator, inst
       * `-U`: Connects to a USB device (works for an emulator when only one is running).
       * `-f`: Spawns the application and injects the script.
       * `-l`: Loads the script.
-4.  **Complete Launch:** Once the app is spawned, you may need to enter specific prompts, such as:
-    ```
-    Enter group-id: group-2
-    ```
+4.  **Complete Launch:** Once the app is spawned, enter group-id: group-2
 
 
 -----
+
