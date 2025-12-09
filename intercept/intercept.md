@@ -22,6 +22,7 @@ This guide outlines the steps to configure an Android 14 (API 34) emulator, inst
 3.  **Finish** the configuration and **Launch** the emulator.
 4.  **Install APK:** Install the `SecureChat` APK onto the running emulator using `adb install SecureChat.apk`.
 
+
 -----
 
 ### 🔒 Creating Certificates and Installing as Trusted
@@ -37,9 +38,16 @@ This guide outlines the steps to configure an Android 14 (API 34) emulator, inst
       * Save the certificate to a known location on your host PC (e.g., `cacert.der`).
 4.  **Install Certificate:** Android 14 (API 34) requires specific steps to install a CA as a **system-trusted credential**. Follow a guide like the one referenced:
       * `https://httptoolkit.com/blog/android-14-install-system-ca-certificate/#how-to-install-system-ca-certificates-in-android-14`
+      * **Create a hashed certificate name:**
+        ```
+        openssl x509 -inform DER -in <name>.der -out <name>.pem
+        openssl x509 -inform PEM -subject_hash_old -in <name>.pem | head -1
+        mv <name>.pem <hash>.0
+        ```
       * **Push the Certificate:** Use **ADB** to push the exported certificate to the device. Remember its location and name.
       * **Run Commands:** Use the ADB shell to copy the cert into the system's trusted store and adjust permissions.
 5.  **Confirmation:** On the emulator, navigate to **Settings** and confirm that the "PortSwigger" CA is listed inside **"Trusted Credentials"** (under the "System" tab).
+6. **Verify on phone:** Set your phone proxy to the set host/port. Then test the Internet connection with intercept on.
 
 -----
 
@@ -83,5 +91,6 @@ This guide outlines the steps to configure an Android 14 (API 34) emulator, inst
     ```
     Enter group-id: group-2
     ```
+
 
 -----
