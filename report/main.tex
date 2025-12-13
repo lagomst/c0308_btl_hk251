@@ -159,62 +159,62 @@
 
 % ===== Trang tiêu đề (khung viền, logo, tên môn, tiêu đề) =====
 \begin{titlepage}
-\begin{tikzpicture}[remember picture, overlay]
-	\draw[line width = 4pt] ($(current page.north west) + (0.4in,-0.5in)$) rectangle ($(current page.south east) + (-0.4in,0.5in)$);
-	\draw[line width=1.5pt]
-		($ (current page.north west) + (0.45in,-0.55in) $)
-		rectangle
-		($ (current page.south east) + (-0.45in,0.55in) $);
-\end{tikzpicture}
+    \begin{tikzpicture}[remember picture, overlay]
+        \draw[line width = 4pt] ($(current page.north west) + (0.4in,-0.5in)$) rectangle ($(current page.south east) + (-0.4in,0.5in)$);
+        \draw[line width=1.5pt]
+        ($ (current page.north west) + (0.45in,-0.55in) $)
+        rectangle
+        ($ (current page.south east) + (-0.45in,0.55in) $);
+    \end{tikzpicture}
 
-\begin{center}
-	\Large \textbf{VIETNAM NATIONAL UNIVERSITY, HO CHI MINH CITY UNIVERSITY OF TECHNOLOGY} \\
-	\Large \textbf{FACULTY OF COMPUTER SCIENCE AND ENGINEERING}
-\end{center}
+    \begin{center}
+        \Large \textbf{VIETNAM NATIONAL UNIVERSITY, HO CHI MINH CITY UNIVERSITY OF TECHNOLOGY} \\
+        \Large \textbf{FACULTY OF COMPUTER SCIENCE AND ENGINEERING}
+    \end{center}
 
-\vspace{0.2cm}
+    \vspace{0.2cm}
 
-\begin{figure}[h!]
-\begin{center}
-\includegraphics[width=6cm]{images/hcmut.png}
-\end{center}
-\end{figure}
+    \begin{figure}[h!]
+        \begin{center}
+            \includegraphics[width=6cm]{images/hcmut.png}
+        \end{center}
+    \end{figure}
 
-\begin{center}
-	\textbf{{\LARGE ADVANCE CRYPTOGRAPHY AND CODING THEORY}} \\ \vspace{0.3cm}
-	\textbf{{\LARGE (CO3083)}} \\
-\end{center}
+    \begin{center}
+        \textbf{{\LARGE ADVANCE CRYPTOGRAPHY AND CODING THEORY}} \\ \vspace{0.3cm}
+        \textbf{{\LARGE (CO3083)}} \\
+    \end{center}
 
-\vspace{-6pt}
+    \vspace{-6pt}
 
-\rule{\textwidth - 50pt}{1pt}
+    \rule{\textwidth - 50pt}{1pt}
 
-\begin{center}
-	\textbf{\LARGE Assignment}
-\end{center}
+    \begin{center}
+        \textbf{\LARGE Assignment}
+    \end{center}
 
-\vspace{-6pt}
+    \vspace{-6pt}
 
-\rule{\textwidth - 50pt}{1pt}
+    \rule{\textwidth - 50pt}{1pt}
 
-\begin{table}[h]
-    % Tăng khoảng cách dòng trong bảng bằng cách sử dụng arraystretch
-    \renewcommand{\arraystretch}{2.0}
-    \begin{tabularx}{\textwidth}{@{}p{3.7cm} l >{\raggedright\arraybackslash}X l@{}}
-		& {\Large Advisor} & {\Large \dotfill} & \\
-		& {\Large Group} & {\Large \dotfill} & \\
-		& {\Large Students} & {\Large Nguyễn Tấn Tài} & {\Large 2212990} \\
-		&  & {\Large Nguyễn Chánh Tín} & {\Large 2213491} \\
-		&  & {\Large \dotfill} & {\Large \dotfill} \\
-    \end{tabularx}
-    \renewcommand{\arraystretch}{1.0}
-\end{table}
+    \begin{table}[h]
+        % Tăng khoảng cách dòng trong bảng bằng cách sử dụng arraystretch
+        \renewcommand{\arraystretch}{2.0}
+        \begin{tabularx}{\textwidth}{@{}p{3.7cm} l >{\raggedright\arraybackslash}X l@{}}
+             & {\Large Advisor}  & {\Large \dotfill}         &                   \\
+             & {\Large Group}    & {\Large \dotfill}         &                   \\
+             & {\Large Students} & {\Large Nguyễn Tấn Tài}   & {\Large 2212990}  \\
+             &                   & {\Large Nguyễn Chánh Tín} & {\Large 2213491}  \\
+             &                   & {\Large \dotfill}         & {\Large \dotfill} \\
+        \end{tabularx}
+        \renewcommand{\arraystretch}{1.0}
+    \end{table}
 
-\vspace{4cm}
+    \vspace{4cm}
 
-\begin{center}
-	{\large HO CHI MINH CITY, OCTOBER 2025 }
-\end{center}
+    \begin{center}
+        {\large HO CHI MINH CITY, OCTOBER 2025 }
+    \end{center}
 
 \end{titlepage}
 
@@ -232,6 +232,8 @@
 \input{contents/a}
 \newpage
 \input{contents/1b}
+\newpage
+\input{contents/3_1}
 % \newpage
 % \input{contents/3_collision_resistant_hash_functions}
 % \newpage
