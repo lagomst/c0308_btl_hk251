@@ -1,61 +1,4 @@
 import random
-from sage.all import EllipticCurve, GF, discrete_log, gcd
-
-def factor_out_two_powers(n : int):
-    """Factor out powers of two from n.
-
-    Returns (q, exp) such that n == q * 2**exp and q is odd.
-    """
-    if n < 0 or not isinstance(n, int):
-        raise ValueError("Value must be a positive integer!")
-    
-    q: int = n
-    exp: int = 0
-    # n = q * 2^exp where q must be odd integer
-    while(q > 1 and q & 1 == 0): 
-        exp += 1
-        q = q >> 1
-    return q, exp
-
-def tonelli_shanks(p: int, n: int):
-    # Solve x^2 = n mod p using Tonelli-Shanks algorithm
-    # p must be an odd prime; returns one square root or None
-    # if no solution.
-    print(f"Tonelli shanks: {p=} {n=}")
-    q, s = factor_out_two_powers(p-1)
-    z = None
-    for i in range(2, p):
-        if pow(i, (p-1)//2, p) == p-1:
-            z = i
-            break
-    if not z:
-        return None
-    m = s
-    c = pow(z, q, p)
-    t = pow(n, q, p)
-    r = pow(n, (q+1)//2, p)
-    while(True):
-        if t == 0:
-            return 0
-        if t == 1:
-            return r
-        
-        step = None
-        for i in range(1, m):
-            temp = pow(t, 1 << i, p)
-            if temp == 1:
-                step = i
-                break    
-        if not step:
-            return None
-        b_pow = 1 << (m - step - 1)
-        b = pow(c, b_pow, p)
-        m = step
-        c = (b * b) % p
-        t = (t * c) % p
-        r = (r * b) % p
-        
-    return r
 
 class EC:
     # Elliptic curve funciton class, 
@@ -68,17 +11,13 @@ class EC:
 
     @property
     def order(self)->int:
-        if self.set_order:
-            return self.set_order
-        field = GF(self.p)
-        E = EllipticCurve(field, [self.a, self.b])
-        return int(E.order())
+        return self.set_order
     
     def __eq__(self, value):
         # Compare two curves by coefficients a and b
         if not isinstance(value, self.__class__):
             raise NotImplemented("unsupported operand type(s) for ==: '{}' and '{}'").format(self.__class__, type(value))
-        return self.a == value.a and self.b == value.b
+        return self.a == value.a and self.b == value.b and self.p == value.p
     
     def func(self) -> str:
         # Human readable curve equation
@@ -96,27 +35,6 @@ class EC:
     def right_term(self, x:int):
         return (x*x*x + self.a*x + self.b)%self.p
     
-    
-    def random_point(self):
-        """
-        Return a random affine point based on x with x = randint(1,p-1)
-        """    
-        p = self.p
-        while(True):
-            x = random.randint(1, p-1)
-            y_squared = self.right_term(x)
-            if pow(y_squared, (p-1)//2, p) != 1: # Does right-term value have square-root?
-                continue
-
-            if p % 4 == 3:
-                y = pow(y_squared, (p+1)//4, p)
-            else:
-                y = tonelli_shanks(p, y_squared) # algorithm to solve for square-root
-            break
-
-        return x, y
-    
-        
 class PointEC:
     # Represent a point on a certain elliptic curve,
     # store as projective coordinate

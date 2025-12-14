@@ -1,0 +1,487 @@
+\section{Task 3.3: Khai Thác Lỗ Hổng TOFU và Proof-of-Concept}
+
+\subsection{Giới thiệu}
+
+Trong phần này, mục tiêu đặt ra là khai thác một điểm yếu trong giao thức SecureChat bằng cách giả mạo máy chủ để thiết lập một kênh mã hóa giả với phía client. \\
+Phân tích cho thấy cơ chế \textbf{Trust-On-First-Use (TOFU)} kết hợp với \textbf{Unau-thenticated Login} tạo ra lỗ hổng nghiêm trọng. Kẻ tấn công có thể lợi dụng điểm yếu này để giả mạo server và kiểm soát toàn bộ quá trình trao đổi dữ liệu giữa client và server.
+
+\subsection{Lớp Lỗ Hổng Bị Khai Thác}
+
+\subsubsection{Định danh Lỗ Hổng}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabularx}{\textwidth}{|p{4cm}|X|}
+\hline
+\textbf{Thuộc tính} & \textbf{Giá trị} \\
+\hline
+Tên lỗ hổng & Trust-On-First-Use (TOFU) + Unauthenticated Login \\
+\hline
+Mức độ nghiêm trọng & {\textbf{HIGH}} (CVSS 7.1) \\
+\hline
+CWE & CWE-295 (Improper Certificate Validation), CWE-347 (Improper Verification of Cryptographic Signature) \\
+\hline
+Mục tiêu khai thác & Server Impersonation \\
+\hline
+User ID được test & \texttt{group-2} \\
+\hline
+\end{tabularx}
+\caption{Thông tin về lỗ hổng TOFU được khai thác}
+\end{table}
+
+\subsubsection{Chi Tiết Các Điểm Yếu}
+
+Lỗ hổng phát sinh từ ba điểm yếu cơ bản trong SecureChat protocol:
+
+\vspace{0.3cm}
+
+\noindent\textbf{1. TOFU Model - Thiếu xác thực long-term server identity}
+
+\begin{itemize}
+\item Client không có cơ chế xác thực server identity ngoài chữ ký ephemeral (tạm thời)
+\item Khi certificate pinning bị bypass (qua Frida), client chấp nhận \textbf{bất kỳ public key nào} mà attacker gửi trong session đầu tiên
+\item Không có out-of-band verification (QR code, SMS, pre-shared secret, etc.)
+\item Một khi TOFU trust bị thiết lập, client tin tưởng server giả mạo cho toàn bộ session
+\end{itemize}
+
+\vspace{0.2cm}
+
+\noindent\textbf{2. Ephemeral-Only Signatures - Không có binding với server identity}
+
+\begin{itemize}
+\item Tất cả chữ ký đều sử dụng temporary keys thay vì long-term identity keys
+\item Mỗi session có ephemeral key khác nhau, không có cách để client pin/verify server identity
+\item Attacker tạo ephemeral keys mới → client vẫn accept vì signature hợp lệ (do attacker tạo)
+\end{itemize}
+Code reference: \texttt{intercept\_server.py:99-107} sử dụng \texttt{ephemeral\_sign\_message()}
+\begin{lstlisting}
+def ephemeral_sign_message(message: str, generator:PointEC):
+    curve = generator.curve
+    order = curve.order
+    ephemeral_privkey = random.randint(2, order-1)
+    ephemeral_pubkey = generator * ephemeral_privkey
+    r, s = ecdsa_sign(message, generator, ephemeral_privkey)
+    return ephemeral_pubkey, r, s
+\end{lstlisting}
+
+\vspace{0.2cm}
+
+\noindent\textbf{3. Unauthenticated Login}
+
+\begin{itemize}
+\item User ID được chọn từ danh sách có sẵn ( \texttt{group-2}) \textbf{mà không cần password}
+\item Không có authentication mechanism (password, MFA, certificate-based auth)
+\item Attacker có thể login với bất kỳ user ID nào và impersonate user
+\end{itemize}
+\texttt{intercept\_server.py:138-148} - hàm \texttt{create\_session()} 
+cho phép tạo session với bất kỳ user ID nào mà không cần verify hoặc authentication. 
+Attacker có thể gọi \texttt{create\_session(user\_id=``attacker-controlled'')} để tạo session 
+cho user ID bất kỳ mà không cần password.
+\begin{lstlisting}
+def create_session(self, user_id="group-2", algo="ecdh_2"):
+        sid = os.urandom(32).hex()
+        created = datetime.now().timestamp()
+        session_data = {
+            "sessionId": sid,
+            "algorithm": algo,
+            "userId": user_id,
+            "createdAt": created
+        }
+        return session_data
+\end{lstlisting}
+\texttt{intercept\_server.py:150-168} - Hàm \texttt{get\_login\_session()}
+không verify user credentials, chỉ ký session với ephemeral key
+\begin{lstlisting}
+def get_login_session(self, custom_session_data:str|dict=None):
+    curve = self.ecdh.curve
+    G = self.ecdh.generator
+    if custom_session_data:
+        session_data = custom_session_data
+    else:
+        session_data = self.create_session()
+    sessionDataStr = json.dumps(session_data) if isinstance(session_data, dict) else session_data # message
+    ephemeral_pubkey, r, s = ephemeral_sign_message(sessionDataStr, G)
+    ephe_x, ephe_y = ephemeral_pubkey.get_affine_coordinate()
+    self.privkey = random.randint(2, curve.order-1)
+    self.pubkey = G * self.privkey
+    pubkey_xy = (self.pubkey.get_affine_coordinate())
+    return session_data, pubkey_xy, (ephe_x, ephe_y), (r, s)
+# mitm_server.py:173-175 - MITM call server.get_login_session(custom_session_data=session)}
+_, pubkey_xy, ephe_xy, session_sig = self.server.get_login_session(custom_session_data=session)
+\end{lstlisting}
+
+
+\subsection{Các Bước Thực Hiện Khai Thác (High-Level)}
+
+\subsubsection{Mô Hình Tấn Công - Protocol Sequence}
+
+Diagram sequence dưới đây trình bày chi tiết giao thức SecureChat từ phía client (Client App, LoginActivity, ChatActivity, CryptoManager) và phía server:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{images/Combined_Secure_Communication_Flow.jpg}
+\caption{SecureChat Protocol Sequence Diagram - Chi tiết các messages, key exchanges, và các actors}
+\label{fig:protocol-sequence}
+\end{figure}
+
+\subsubsection{Chi Tiết Các Phase Chính}
+
+\noindent\textbf{{Phase 1: Initialization / Session Restore (First Yellow Block):}}
+
+\begin{itemize}
+\item Client gọi \texttt{RestoreSessionToken} để tái sử dụng session cũ
+\item Nếu session token hợp lệ, server trả về nó (format: JWT token)
+\item Nếu session không còn hoặc invalid, client tiến tới Phase 2 (Login)
+\item Session token chứa: \texttt{sessionId}, \texttt{algorithm} (ecdh\_2), \texttt{userId}, \texttt{createdAt}
+\end{itemize}
+
+\vspace{0.3cm}
+
+\noindent\textbf{{Phase 2: Login \& Algorithm Selection (Second Yellow Block):}}
+
+\begin{itemize}
+\item Client gửi \texttt{LoginRequest} với user ID: \texttt{group-2}
+\item Server respond với:
+  \begin{itemize}
+  \item \texttt{sessionToken} (JWT format: header.payload.signature)
+  \item \texttt{serverSignaturePublicKey} (ephemeral key for session signing)
+  \item \texttt{serverPublicKey} (session key for ECDH key exchange)
+  \item \texttt{sessionSignature} (r, s values) - signature over session data
+  \item Algorithm: \texttt{ecdh\_2} (ECDH with NIST P-256 curve)
+  \end{itemize}
+\item Client verify \texttt{sessionSignature} với \texttt{serverSignaturePublicKey}
+\item Signature verification pass $\Rightarrow$ Client accepts server keys \textbf{(TOFU vulnerability)}
+\end{itemize}
+
+\vspace{0.3cm}
+
+\noindent\textbf{{Phase 3: Key Exchange (ECDH P-256)}}
+
+\noindent\textbf{Server-side:}
+
+\begin{itemize}
+\item Sinh cặp khóa long-term: $d_{server} \in \mathbb{Z}, P_{server} = G \times d_{server}$
+\item Thực hiện ECDH với client: shared secret $= P_{client} \times d_{server}$
+\item Derive AES-256 key: \texttt{PBKDF2(sharedSecret, salt=16bytes, iterations=1000, keyLength=32)}
+\item Sinh cặp khóa ephemeral: $k_{eph}, P_{eph} = G \times k_{eph}$
+\item Ký public key của client bằng ephemeral key: $(r, s) = \text{ECDSA.Sign}(P_{client}, k_{eph})$
+\end{itemize}
+
+\noindent\textbf{Client-side:}
+
+\begin{itemize}
+\item Sinh cặp khóa long-term: $d_{client}, P_{client}$
+\item Thực hiện ECDH với server: shared secret $= P_{server} \times d_{client}$ (GIỐNG nhau!)
+\item Derive AES-256 key từ shared secret (kết quả giống server)
+\item Sinh cặp khóa ephemeral và ký tương tự
+\end{itemize}
+
+\noindent\textbf{Kết quả:} Cả client và server đều có AES-256 key giống nhau, sẵn sàng giao tiếp qua encrypted channel.\\
+
+\noindent\textbf{{Phase 4: Messaging với AES-GCM + Ephemeral Sign}}
+
+\noindent\textbf{Client gửi message:}
+
+\begin{enumerate}
+\item Sinh nonce ngẫu nhiên 12 bytes (IV)
+\item Mã hóa plaintext bằng AES-256-GCM:
+\begin{lstlisting}[language=Python]
+cipher = AES.new(self.aes_key, MODE_GCM, nonce=iv, mac_len=16)
+encrypted_msg, tag = cipher.encrypt_and_digest(message)
+\end{lstlisting}
+
+\item Ghép nối: \texttt{base64(iv + encrypted\_msg + tag)}
+
+\item Ký ghép nối này bằng ephemeral private key để tạo signature $(r, s)$
+
+\item Gửi JSON chứa: \texttt{encryptedMessage}, \texttt{messageSignature}, \texttt{clientSignaturePublicKey}
+\end{enumerate}
+
+\noindent\textbf{Server nhận và xử lý:}
+
+\begin{enumerate}
+\item Tách: iv (12 bytes đầu), ciphertext (phần giữa), tag (16 bytes cuối)
+
+\item Verify ECDSA signature trên ghép nối base64 sử dụng client's ephemeral public key
+
+\item Giải mã AES-256-GCM:
+\begin{lstlisting}[language=Python]
+cipher = AES.new(self.aes_key, MODE_GCM, nonce=iv, mac_len=16)
+plaintext = cipher.decrypt_and_verify(ciphertext, tags)
+\end{lstlisting}
+
+\item Đọc plaintext message và xử lý
+
+\item Sinh response, mã hóa và ký bằng quy trình tương tự
+\end{enumerate}
+
+\noindent\textbf{Client nhận response:}
+
+\begin{enumerate}
+\item Verify signature server bằng server's ephemeral public key
+
+\item Giải mã response sử dụng AES-256-GCM (cùng shared secret)
+
+\item Hiển thị plaintext cho user (có thể đã bị MITM modify)
+\end{enumerate}
+
+\vspace{0.3cm}
+
+\noindent\textbf{Các thành phần mã hóa:}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabularx}{\textwidth}{|p{3cm}|p{4cm}|X|}
+\hline
+\textbf{Thành phần} & \textbf{Thuật toán} & \textbf{Chi tiết} \\
+\hline
+Key Exchange & ECDH (P-256) & NIST P-256 (secp256r1), 256-bit security \\
+\hline
+Chữ ký & ECDSA (P-256) & Ephemeral key mỗi message, SHA-256 hash \\
+\hline
+Mã hóa & AES-256-GCM & 256-bit key, GCM mode, 12-byte nonce, 16-byte tag \\
+\hline
+KDF & PBKDF2-SHA256 & 1000 iterations, 16-byte salt, 32-byte key \\
+\hline
+Hash & SHA-256 & Tất cả hash dùng SHA-256 \\
+\hline
+Token & JWT & Header.Payload.Signature \\
+\hline
+\end{tabularx}
+\caption{Các thành phần mã hóa trong SecureChat}
+\end{table}
+
+\pagebreak
+\subsection{Evidence Khai Thác Thành Công}
+
+\subsubsection{MITM Server Logs}
+
+Dưới đây là logs thực tế từ MITM server khi exploit được thực thi:
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{images/log_exploit.jpg}
+\vspace{0.5cm}
+\caption{MITM Server Execution Logs}
+\label{fig:protocol-sequence}
+\end{figure}
+
+\subsubsection{Impersonation Success Indicators}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{|p{6cm}|p{8cm}|}
+\hline
+\textbf{Indicator} & \textbf{Evidence} \\
+\hline
+Fake server public key accepted & Client stores fake key after login \\
+\hline
+Session signature verification passed & Signature check passes \\
+\hline
+Two encrypted channels established & MITM maintains $SS_1$ and $SS_2$ \\
+\hline
+Client plaintext readable by MITM & Decrypt using AES key from $SS_1$ \\
+\hline
+Server plaintext readable by MITM & Decrypt using AES key from $SS_2$ \\
+\hline
+Server impersonation achieved & Client cannot distinguish MITM \\
+\hline
+\end{tabularx}
+\caption{Server Impersonation Success Indicators}
+\end{table}
+
+\subsection{Khuyến Cáo Khắc Phục}
+
+\subsubsection{Fix \#1: Long-Term Server Identity Key}
+
+\noindent\textbf{Vấn đề:} Ephemeral-only signatures không có binding to server identity.
+
+\noindent\textbf{Giải pháp:} Implement long-term server identity key separate từ ephemeral keys:
+
+\begin{lstlisting}[language=Python, caption=Server có TWO keypairs]
+class SecureServer:
+    def __init__(self):
+        self.ltk_privkey = load_long_term_key()
+        self.ltk_pubkey = derive_public_key(self.ltk_privkey)
+        self.ephemeral_privkey = generate_ephemeral_key()
+        self.ephemeral_pubkey = derive_public_key(self.ephemeral_privkey)
+    
+    def get_login_session(self, user_id):
+        session_data = create_session_data(user_id)
+        ltk_signature = ecdsa_sign(session_data, self.ltk_privkey)
+        
+        return {
+            "sessionToken": create_jwt(session_data),
+            "serverPublicKey": self.ltk_pubkey,
+            "sessionSignature_LTK": ltk_signature,
+            "serverEphemeralKey": self.ephemeral_pubkey,
+            "ephemeralSignature": ecdsa_sign(
+                session_data, self.ephemeral_privkey)
+        }
+\end{lstlisting}
+
+\noindent\textbf{Client pins long-term key:}
+
+\begin{lstlisting}[language=Python, caption=Client pins server identity]
+class SecureClient:
+    def __init__(self):
+        self.pinned_server_ltk = None
+    
+    def verify_server_login(self, response):
+        server_ltk = response["serverPublicKey"]
+        
+        if self.pinned_server_ltk is None:
+            print("Pinning server LTK (TOFU)")
+            self.pinned_server_ltk = server_ltk
+            if not self.oob_verify(sha256(server_ltk)):
+                raise SecurityException("OOB verification failed")
+        else:
+            if hash(server_ltk) != hash(self.pinned_server_ltk):
+                raise SecurityException("Server key changed - MITM!")
+        
+        return ecdsa_verify(response, server_ltk, response["sig"])
+\end{lstlisting}
+
+\subsubsection{Fix \#2: Strong Authentication}
+
+\noindent\textbf{Option A: Password-Based:}
+
+\begin{lstlisting}[language=Python,caption=Password authentication]
+class AuthServer:
+    def authenticate_user(self, user_id, password_hash):
+        stored_hash = self.user_db[user_id]["password_hash"]
+        if not constant_time_compare(password_hash, stored_hash):
+            return None
+        return self.create_session(user_id)
+\end{lstlisting}
+
+\noindent\textbf{Option B: Public-Key Infrastructure:}
+
+\begin{lstlisting}[language=Python, caption=PKI authentication]
+class AuthServer:
+    def authenticate_user(self, user_cert, nonce, signature):
+        if not self.verify_certificate(user_cert):
+            return None
+        cert_pubkey = self.extract_public_key(user_cert)
+        if not ecdsa_verify(nonce, cert_pubkey, signature):
+            return None
+        user_id = self.extract_subject(user_cert)
+        return self.create_session(user_id)
+\end{lstlisting}
+
+\subsubsection{Fix \#3: Runtime Integrity Checks}
+
+\begin{lstlisting}[language=Python, caption=Detect pinning bypass]
+def check_certificate_pinning_integrity():
+    try:
+        response = requests.get(
+            "https://invalid-cert.example.com",
+            verify=False, timeout=2)
+        raise IntegrityException("Pinning disabled!")
+    except requests.exceptions.SSLError:
+        return True
+\end{lstlisting}
+
+
+\subsection{Kết Luận}
+
+\subsubsection{Tóm Tắt Khai Thác}
+
+Nhóm đã chứng minh thành công việc khai thác lỗ hổng \textbf{Trust-On-First-Use (TOFU)} kết hợp với \textbf{Unauthenticated Login} trong giao thức SecureChat. Thông qua ba bước chính, attacker đạt được mục tiêu \textbf{Server Impersonation} hoàn toàn:
+
+\vspace{0.2cm}
+
+\noindent\textbf{Bước 1: Thay thế khóa server (Phase 1)}
+
+Client đăng nhập và nhận session response từ server thực. MITM attacker intercept response này, extract JWT session data, brute force JSON key order, sinh cặp khóa giả mạo, re-sign session bằng khóa giả mạo, rồi gửi response modified cho client. Client verify signature và chấp nhận - vì attacker tạo signature nên nó valid. Đây chính là \textbf{TOFU vulnerability}: client tin tưởng server giả mạo trong lần kết nối đầu tiên mà không có cơ chế xác thực nào khác.
+
+\vspace{0.2cm}
+
+\noindent\textbf{Bước 2: Thiết lập MITM position (Phase 2)}
+
+Trong key exchange, MITM giữ vai trò "fake server" với client và "fake client" với server thực. MITM derive được hai shared secrets khác nhau: $SS_1$ (với client) và $SS_2$ (với server thực). Kết quả là MITM kiểm soát hai independent encrypted channels - một với client và một với server. Cả client và server đều tin rằng họ đang nói chuyện với nhau, trong khi thực tế đều nói chuyện với attacker.
+
+\vspace{0.2cm}
+
+\noindent\textbf{Bước 3: Đọc và sửa đổi messages (Phase 3)}
+
+Mỗi khi client gửi message được mã hóa bằng $SS_1$, MITM decrypt sử dụng $SS_1$ để đọc plaintext. MITM có thể chọn để message thoát khỏi hệ thống hoặc sửa đổi nó. Message sửa đổi được re-encrypt bằng $SS_2$ và gửi đến server. Quá trình tương tự xảy ra khi server trả lời. Kết quả: \textbf{MITM có quyền truy cập plaintext đầy đủ} đến tất cả giao tiếp giữa client và server, cùng với \textbf{khả năng sửa đổi nội dung} mà cả hai bên không hề biết.
+
+\vspace{0.3cm}
+
+\subsubsection{Root Cause Analysis}
+
+Lỗ hổng không phát sinh từ các chi tiết triển khai sai lầm mà từ \textbf{quyết định thiết kế căn bản}: 
+
+\begin{enumerate}
+\item \textbf{Ephemeral-only signatures:} Giao thức chỉ sử dụng ephemeral keys để ký session và messages. Không có long-term server identity key để bind các session lại với nhau. Attacker chỉ cần sinh ephemeral keys mới là có thể tạo valid signatures.
+
+\item \textbf{No server authentication:} Không có out-of-band verification, certificate pinning at application level, hoặc bất kỳ cơ chế nào để client xác thực server identity. TOFU model (tin tưởng server trong lần kết nối đầu tiên) là cơ chế xác thực duy nhất - và nó hoàn toàn không an toàn khi không có long-term keys.
+
+\item \textbf{Unauthenticated user login:} Bất kỳ ai cũng có thể login với bất kỳ user ID nào mà không cần password hoặc credential. Attacker không cần phải brute force hay exploit lỗ hổng riêng - họ chỉ cần giả mạo server là đủ để impersonate bất kỳ user nào.
+\end{enumerate}
+
+Kết hợp ba yếu tố này tạo ra \textbf{perfect storm} cho TOFU attack.
+
+\vspace{0.3cm}
+
+\subsubsection{Mức Độ Nghiêm Trọng}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{|p{4cm}|X|}
+\hline
+\textbf{Tiêu Chí} & \textbf{Đánh Giá} \\
+\hline
+Attack Vector & Network - MITM position giữa client và server \\
+\hline
+Attack Complexity & LOW - Chỉ cần Burp Suite, không cần zero-day \\
+\hline
+Privileges Required & NONE - Attacker ở middle network, không cần user/admin \\
+\hline
+Confidentiality Impact & HIGH - Tất cả plaintext đều readable \\
+\hline
+Integrity Impact & HIGH - Attacker sửa đổi messages \\
+\hline
+Availability Impact & HIGH - Attacker block/drop messages \\
+\hline
+\textbf{CVSS v3.1 Base Score} & \textbf{7.1 - HIGH} \\
+\hline
+Confidence Level & CONFIRMED - Exploit thành công \\
+\hline
+\end{tabularx}
+\caption{CVSS Severity Assessment}
+\end{table}
+
+\vspace{0.3cm}
+
+\subsubsection{Khuyến Cáo Và Hướng Đi Tiếp}
+
+Mức độ critical yêu cầu hành động ngay lập tức. Các bước khắc phục nên được ưu tiên như sau:
+
+\noindent\textbf{Priority 1:} Implement long-term server identity key. Server cần cặp khóa long-term ($d_{ltk}, P_{ltk}$) riêng biệt với ephemeral keys. Session signature phải được ký bằng long-term key, không phải ephemeral. Client pin long-term public key sau lần kết nối đầu tiên.
+
+\noindent\textbf{Priority 2:} Thêm authentication mechanism. Loại bỏ unauthenticated login. Implement password-based auth (với PBKDF2 hashing), public-key auth (user certificate), hoặc MFA. Chứng minh user identity trước khi tạo session.
+
+\noindent\textbf{Priority 3:} Thêm out-of-band verification cho lần kết nối đầu tiên. User có thể scan QR code, gửi SMS confirmation, hoặc xác thực server fingerprint qua side channel để verify server long-term key.
+
+\noindent\textbf{Priority 4 (Tiêu chuẩn):} Implement key rotation policy, certificate pinning at application level, và runtime integrity checks để detect Frida/debugger bypass.
+
+Các patch Priority 1 và 2 phải được deploy trước khi sử dụng SecureChat trong production.
+
+\vspace{0.3cm}
+
+Việc khai thác này chứng tỏ rằng \textbf{ephemeral signatures không đủ} để xác thực server identity trong long-lived sessions. Một giao thức mã hóa an toàn cần phải:
+
+\begin{enumerate}
+\item Kết hợp long-term identity keys với ephemeral keys
+\item Bind session signatures vào long-term identity (không phải chỉ ephemeral)
+\item Có server authentication mechanism riêng biệt với symmetric encryption keys
+\item Không dựa vào TOFU model nếu không có out-of-band verification
+\end{enumerate}
+
+Đặc biệt, trong bối cảnh cryptography hiện đại, việc thiếu long-term server identity key là một thiếu sót quan trọng mà có thể bị khai thác như báo cáo này đã chứng minh.
+
