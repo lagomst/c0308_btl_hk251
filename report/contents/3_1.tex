@@ -8,10 +8,11 @@ Task 3.1 là bài tập thực hành về phân tích bảo mật ứng dụng A
 
 \textbf{Môi trường thực hiện:}
 \begin{itemize}
-    \item \textbf{Android Studio:} với Android Emulator API 33
-    \item \textbf{Burp Suite:} Community Edition v2025.8.7
-    \item \textbf{Java:} OpenJDK 17.0.16
-    \item \textbf{Tools:} apktool, apksigner, adb
+  \item \textbf{Android Studio:} với Android Emulator API 33
+  \item \textbf{Burp Suite:} Community Edition v2025.8.7
+  \item \textbf{Java:} OpenJDK 17.0.16
+  \item \textbf{Frida:} Latest version với frida-tools
+  \item \textbf{Tools:} frida, frida-server, adb
 \end{itemize}
 
 \textbf{Điểm số:} 0.5 điểm
@@ -25,29 +26,29 @@ Việc thiết lập môi trường Android development yêu cầu cấu hình �
 \textbf{Các bước thực hiện:}
 
 \begin{enumerate}
-    \item \textbf{Cài đặt Android Studio:}
-          \begin{lstlisting}[language=bash]
+  \item \textbf{Cài đặt Android Studio:}
+        \begin{lstlisting}[language=bash]
 # Tai truc tiep tu developer.android.com
 # Chon phien ban phu hop voi he dieu hanh
     \end{lstlisting}
 
-    \item \textbf{Cấu hình Android SDK:}
-          \begin{itemize}
-              \item Mở Android Studio $\rightarrow$ Settings $\rightarrow$ Android SDK
-              \item Cài đặt: Android 13.0 (API 33), SDK Build-Tools, Platform-Tools
-              \item Command-line Tools cho ADB support
-          \end{itemize}
+  \item \textbf{Cấu hình Android SDK:}
+        \begin{itemize}
+          \item Mở Android Studio $\rightarrow$ Settings $\rightarrow$ Android SDK
+          \item Cài đặt: Android 13.0 (API 33), SDK Build-Tools, Platform-Tools
+          \item Command-line Tools cho ADB support
+        \end{itemize}
 
-    \item \textbf{Tạo Android Virtual Device (AVD):}
-          \begin{itemize}
-              \item Device Manager $\rightarrow$ Create Device $\rightarrow$ Pixel 7
-              \item System Image: API 33 (Android 13)
-              \item Tên: SMC\_Test\_Device
-              \item RAM: 4096 MB, Cold boot enabled
-          \end{itemize}
+  \item \textbf{Tạo Android Virtual Device (AVD):}
+        \begin{itemize}
+          \item Device Manager $\rightarrow$ Create Device $\rightarrow$ Pixel 7
+          \item System Image: API 33 (Android 13)
+          \item Tên: SMC\_Test\_Device
+          \item RAM: 4096 MB, Cold boot enabled
+        \end{itemize}
 
-    \item \textbf{Cấu hình biến môi trường:}
-          \begin{lstlisting}[language=bash]
+  \item \textbf{Cấu hình biến môi trường:}
+        \begin{lstlisting}[language=bash]
 # Them vao shell profile
 export ANDROID_HOME=/path/to/android/sdk
 export PATH=$PATH:$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools
@@ -62,19 +63,19 @@ source ~/.bashrc  # hoac ~/.zshrc tuy theo shell
 Burp Suite Community Edition được sử dụng làm proxy MITM để chặn bắt traffic HTTP/HTTPS.
 
 \begin{enumerate}
-    \item \textbf{Tải và cài đặt:}
-          \begin{itemize}
-              \item Tải từ portswigger.net/burp/releases
-              \item Chọn phiên bản phù hợp với hệ điều hành
-              \item Cài đặt theo hướng dẫn
-          \end{itemize}
+  \item \textbf{Tải và cài đặt:}
+        \begin{itemize}
+          \item Tải từ portswigger.net/burp/releases
+          \item Chọn phiên bản phù hợp với hệ điều hành
+          \item Cài đặt theo hướng dẫn
+        \end{itemize}
 
-    \item \textbf{Cấu hình Project:}
-          \begin{itemize}
-              \item Khởi chạy Burp Suite
-              \item Chọn ``Temporary project'' (Community Edition)
-              \item Xác minh Proxy Listener: 127.0.0.1:8080 active
-          \end{itemize}
+  \item \textbf{Cấu hình Project:}
+        \begin{itemize}
+          \item Khởi chạy Burp Suite
+          \item Chọn ``Temporary project'' (Community Edition)
+          \item Xác minh Proxy Listener: 127.0.0.1:8080 active
+        \end{itemize}
 \end{enumerate}
 
 \subsubsection{Cài đặt Java JDK 17}
@@ -95,27 +96,27 @@ java -version
 \subsubsection{Xuất và Chuyển đổi Chứng chỉ}
 
 \begin{enumerate}
-    \item \textbf{Tạo thư mục làm việc:}
-          \begin{lstlisting}[language=bash]
+  \item \textbf{Tạo thư mục làm việc:}
+        \begin{lstlisting}[language=bash]
 mkdir -p 01-setup
 cd 01-setup
     \end{lstlisting}
 
-    \item \textbf{Xuất chứng chỉ từ Burp Suite:}
-          \begin{itemize}
-              \item Trong Burp: Proxy $\rightarrow$ Settings $\rightarrow$ Proxy Listeners
-              \item Import/export CA certificate
-              \item Chọn ``Certificate in DER format''
-              \item Lưu vào: \texttt{01-setup/burp-cert.der}
-          \end{itemize}
+  \item \textbf{Xuất chứng chỉ từ Burp Suite:}
+        \begin{itemize}
+          \item Trong Burp: Proxy $\rightarrow$ Settings $\rightarrow$ Proxy Listeners
+          \item Import/export CA certificate
+          \item Chọn ``Certificate in DER format''
+          \item Lưu vào: \texttt{01-setup/burp-cert.der}
+        \end{itemize}
 
-    \item \textbf{Chuyển đổi DER sang PEM:}
-          \begin{lstlisting}[language=bash]
+  \item \textbf{Chuyển đổi DER sang PEM:}
+        \begin{lstlisting}[language=bash]
 openssl x509 -inform DER -in burp-cert.der -out burp-cert.pem
     \end{lstlisting}
 
-    \item \textbf{Tạo file chứng chỉ với tên hash:}
-          \begin{lstlisting}[language=bash]
+  \item \textbf{Tạo file chứng chỉ với tên hash:}
+        \begin{lstlisting}[language=bash]
 HASH=$(openssl x509 -inform PEM -subject_hash_old -in burp-cert.pem | head -1)
 cp burp-cert.pem ${HASH}.0
 echo "Certificate hash: $HASH"
@@ -126,8 +127,8 @@ echo "Certificate hash: $HASH"
 \subsubsection{Cài đặt Chứng chỉ trên Android}
 
 \begin{enumerate}
-    \item \textbf{Khởi động emulator với quyền ghi hệ thống:}
-          \begin{lstlisting}[language=bash]
+  \item \textbf{Khởi động emulator với quyền ghi hệ thống:}
+        \begin{lstlisting}[language=bash]
 # Dung emulator hien tai (neu co)
 pkill -f emulator
 
@@ -136,21 +137,21 @@ emulator -avd SMC_Test_Device -writable-system -no-snapshot-load -wipe-data &
 adb wait-for-device
     \end{lstlisting}
 
-    \item \textbf{Remount phân vùng hệ thống:}
-          \begin{lstlisting}[language=bash]
+  \item \textbf{Remount phân vùng hệ thống:}
+        \begin{lstlisting}[language=bash]
 adb root
 adb remount
     \end{lstlisting}
 
-    \item \textbf{Cài đặt chứng chỉ:}
-          \begin{lstlisting}[language=bash]
+  \item \textbf{Cài đặt chứng chỉ:}
+        \begin{lstlisting}[language=bash]
 # Push chung chi vao system certificate store
 adb push 9a5ba575.0 /system/etc/security/cacerts/
 adb shell chmod 644 /system/etc/security/cacerts/9a5ba575.0
     \end{lstlisting}
 
-    \item \textbf{Khởi động lại và xác minh:}
-          \begin{lstlisting}[language=bash]
+  \item \textbf{Khởi động lại và xác minh:}
+        \begin{lstlisting}[language=bash]
 adb reboot
 adb wait-for-device
 adb shell ls -la /system/etc/security/cacerts/ | grep 9a5ba575
@@ -162,26 +163,26 @@ adb shell ls -la /system/etc/security/cacerts/ | grep 9a5ba575
 \subsubsection{Thiết lập Proxy trên Emulator}
 
 \begin{enumerate}
-    \item \textbf{Phương pháp 1: HTTP proxy flag}
-          \begin{lstlisting}[language=bash]
+  \item \textbf{Phương pháp 1: HTTP proxy flag}
+        \begin{lstlisting}[language=bash]
 pkill -f emulator
 emulator -avd SMC_Test_Device -writable-system -http-proxy 127.0.0.1:8080 &
     \end{lstlisting}
 
-    \item \textbf{Phương pháp 2: Cấu hình WiFi proxy (backup)}
-          \begin{itemize}
-              \item Settings $\rightarrow$ Network \& Internet $\rightarrow$ Internet
-              \item Nhấn giữ AndroidWifi $\rightarrow$ Modify network $\rightarrow$ Advanced options
-              \item Proxy: Manual, Hostname: 10.0.2.2, Port: 8080
-          \end{itemize}
+  \item \textbf{Phương pháp 2: Cấu hình WiFi proxy (backup)}
+        \begin{itemize}
+          \item Settings $\rightarrow$ Network \& Internet $\rightarrow$ Internet
+          \item Nhấn giữ AndroidWifi $\rightarrow$ Modify network $\rightarrow$ Advanced options
+          \item Proxy: Manual, Hostname: 10.0.2.2, Port: 8080
+        \end{itemize}
 
-    \item \textbf{Xác minh kết nối:}
-          \begin{itemize}
-              \item Mở Chrome trong emulator
-              \item Truy cập: \texttt{http://burp}
-              \item Phải thấy trang chào mừng Burp Suite
-              \item Kiểm tra Burp $\rightarrow$ Proxy $\rightarrow$ HTTP history có request
-          \end{itemize}
+  \item \textbf{Xác minh kết nối:}
+        \begin{itemize}
+          \item Mở Chrome trong emulator
+          \item Truy cập: \texttt{http://burp}
+          \item Phải thấy trang chào mừng Burp Suite
+          \item Kiểm tra Burp $\rightarrow$ Proxy $\rightarrow$ HTTP history có request
+        \end{itemize}
 \end{enumerate}
 
 \subsection{Xử lý SSL Certificate Pinning}
@@ -193,88 +194,124 @@ emulator -avd SMC_Test_Device -writable-system -http-proxy 127.0.0.1:8080 &
 Sau khi cài đặt APK và thử nghiệm, phát hiện ứng dụng có multiple layers SSL pinning:
 
 \begin{itemize}
-    \item \textbf{Lỗi 1:} ``Trust anchor for certification path not found''
-    \item \textbf{Lỗi 2:} ``SSL Certificate pinning failed''
-    \item \textbf{Lỗi 3:} ``Certificate pinning failure!''
+  \item \textbf{Lỗi 1:} ``Trust anchor for certification path not found''
+  \item \textbf{Lỗi 2:} ``SSL Certificate pinning failed''
+  \item \textbf{Lỗi 3:} ``Certificate pinning failure!''
 \end{itemize}
 
 \textbf{SSL Pinning Implementation Analysis:}
 
 \begin{table}[h]
-    \centering
-    \small
-    \begin{tabularx}{\textwidth}{|p{3cm}|p{4cm}|X|}
-        \hline
-        \textbf{Layer} & \textbf{Implementation}  & \textbf{Description}                        \\
-        \hline
-        Layer 1        & System Certificate Store & Android system-level certificate validation \\
-        \hline
-        Layer 2        & OkHttp CertificatePinner & Application-level certificate pinning       \\
-        \hline
-        Layer 3        & Custom Validation        & Additional certificate validation logic     \\
-        \hline
-    \end{tabularx}
-    \caption{SSL Pinning Layers - Phân tích từ decompiled code}
+  \centering
+  \small
+  \begin{tabularx}{\textwidth}{|p{3cm}|p{4cm}|X|}
+    \hline
+    \textbf{Layer} & \textbf{Implementation}  & \textbf{Description}                        \\
+    \hline
+    Layer 1        & System Certificate Store & Android system-level certificate validation \\
+    \hline
+    Layer 2        & OkHttp CertificatePinner & Application-level certificate pinning       \\
+    \hline
+    Layer 3        & Custom Validation        & Additional certificate validation logic     \\
+    \hline
+  \end{tabularx}
+  \caption{SSL Pinning Layers - Phân tích từ decompiled code}
 \end{table}
 
-\subsubsection{Bypass SSL Pinning bằng APK Patching}
+\subsubsection{Bypass SSL Pinning bằng Frida Dynamic Instrumentation}
 
-\textbf{Phương pháp được sử dụng:} Decompile APK, patch CertificatePinner, và rebuild.
+\textbf{Phương pháp được sử dụng:} Frida dynamic instrumentation để bypass SSL pinning tại runtime.
 
 \begin{enumerate}
-    \item \textbf{Decompile APK:}
-          \begin{lstlisting}[language=bash]
-apktool d secure-app.apk -o secure-app-decompiled
+  \item \textbf{Cài đặt Frida tools:}
+        \begin{lstlisting}[language=bash]
+# Cai dat Frida tools tren host machine
+pip install frida-tools
+
+# Xac minh cai dat
+frida --version
     \end{lstlisting}
 
-    \item \textbf{Patch CertificatePinner.smali:}
-          \begin{itemize}
-              \item Tìm file \texttt{CertificatePinner.smali}
-              \item Sửa tất cả check methods để return immediately
-              \item Bypass certificate validation logic
-          \end{itemize}
+  \item \textbf{Tải và cài đặt Frida server:}
+        \begin{lstlisting}[language=bash]
+# Tai Frida server cho Android ARM64
+# Tu https://github.com/frida/frida/releases
+# Chon: frida-server-X.X.X-android-arm64.xz
 
-    \item \textbf{Patch LoginActivity.smali:}
-          \begin{itemize}
-              \item Tìm \texttt{handleNetworkError} method
-              \item Skip SSL error handling
-              \item Allow untrusted certificates
-          \end{itemize}
-
-    \item \textbf{Rebuild và sign APK:}
-          \begin{lstlisting}[language=bash]
-# Rebuild APK
-apktool b secure-app-decompiled -o secure-app-patched.apk
-
-# Sign voi debug keystore
-apksigner sign --ks debug.keystore secure-app-patched.apk
+# Giai nen va push len emulator
+xz -d frida-server-X.X.X-android-arm64.xz
+adb push frida-server-X.X.X-android-arm64 /data/local/tmp/frida-server
+adb shell chmod 755 /data/local/tmp/frida-server
     \end{lstlisting}
 
-    \item \textbf{Cài đặt patched APK:}
-          \begin{lstlisting}[language=bash]
-adb install -r secure-app-patched.apk
+  \item \textbf{Khởi chạy Frida server:}
+        \begin{lstlisting}[language=bash]
+# Chay Frida server tren emulator (giu terminal nay mo)
+adb shell
+su
+/data/local/tmp/frida-server
+    \end{lstlisting}
+
+  \item \textbf{Tạo Frida script cho SSL bypass:}
+        \begin{lstlisting}[language=bash]
+// fridascript.js - SSL Pinning Bypass Script
+Java.perform(function() {
+    // Hook OkHttp CertificatePinner
+    var CertificatePinner = Java.use("okhttp3.CertificatePinner");
+    CertificatePinner.check.overload('java.lang.String', 'java.util.List')
+        .implementation = function(hostname, peerCertificates) {
+        console.log("[+] SSL Pinning bypassed for: " + hostname);
+        return;
+    };
+    
+    // Hook TrustManager
+    var X509TrustManager = Java.use("javax.net.ssl.X509TrustManager");
+    X509TrustManager.checkServerTrusted.implementation = function(chain, authType) {
+        console.log("[+] TrustManager bypassed");
+        return;
+    };
+    
+    console.log("[+] SSL Pinning bypass script loaded");
+});
+    \end{lstlisting}
+
+  \item \textbf{Chạy app với Frida instrumentation:}
+        \begin{lstlisting}[language=bash]
+# Khoi dong app voi Frida script
+frida -U -f com.example.securechat -l fridascript.js
+
+# Hoac attach vao app dang chay
+frida -U com.example.securechat -l fridascript.js
     \end{lstlisting}
 \end{enumerate}
 
-\textbf{Kết quả:} SSL pinning bypass thành công, ứng dụng có thể kết nối qua Burp proxy.
+\textbf{Kết quả:} SSL pinning bypass thành công tại runtime, ứng dụng có thể kết nối qua Burp proxy mà không cần modify APK.
 
-\subsubsection{Xác minh SSL Pinning Bypass}
+\subsubsection{Xác minh Frida SSL Pinning Bypass}
 
-Sau khi patch và cài đặt lại APK, thực hiện test để xác minh bypass thành công:
+Sau khi chạy Frida script, thực hiện test để xác minh bypass thành công:
 
 \begin{enumerate}
-    \item \textbf{Test kết nối:}
-          \begin{lstlisting}[language=bash]
-# Khoi dong ung dung va kiem tra Burp Suite
-# Phai thay traffic HTTP/HTTPS trong Proxy -> HTTP history
+  \item \textbf{Test kết nối với Frida:}
+        \begin{lstlisting}[language=bash]
+# Xac minh Frida server dang chay
+frida-ps -U
+
+# Kiem tra app process
+frida-ps -U | grep securechat
+
+# Kiem tra Burp Suite HTTP history
+# Phai thay traffic HTTP/HTTPS sau khi Frida hook
     \end{lstlisting}
 
-    \item \textbf{Xác minh chứng chỉ:}
-          \begin{itemize}
-              \item Burp Suite hiển thị tất cả HTTPS requests
-              \item Không còn SSL certificate errors
-              \item Ứng dụng hoạt động bình thường qua proxy
-          \end{itemize}
+  \item \textbf{Xác minh dynamic bypass:}
+        \begin{itemize}
+          \item Frida console hiển thị SSL bypass messages
+          \item Burp Suite hiển thị tất cả HTTPS requests
+          \item Không còn SSL certificate errors
+          \item Ứng dụng hoạt động bình thường qua proxy
+          \item Không cần modify APK file
+        \end{itemize}
 \end{enumerate}
 
 \subsection{Chặn bắt và Phân tích API}
@@ -286,22 +323,22 @@ Sau khi patch và cài đặt lại APK, thực hiện test để xác minh bypa
 \textbf{API Call 1: Session Create}
 
 \begin{table}[h]
-    \centering
-    \small
-    \begin{tabularx}{\textwidth}{|p{3cm}|X|}
-        \hline
-        \textbf{Endpoint}        & POST /session/create?userId=group-2                                       \\
-        \hline
-        \textbf{Host}            & crypto-assignment.dangduongminhnhat2003.workers.dev                       \\
-        \hline
-        \textbf{Request Fields}  & algorithm, curveParameters (p, a, b, Gx, Gy, order)                       \\
-        \hline
-        \textbf{Response Fields} & sessionToken, serverPublicKey, serverSignaturePublicKey, sessionSignature \\
-        \hline
-        \textbf{Purpose}         & Initiate ECDH key exchange với P-256 curve parameters                     \\
-        \hline
-    \end{tabularx}
-    \caption{Session Create API - Chi tiết thực tế}
+  \centering
+  \small
+  \begin{tabularx}{\textwidth}{|p{3cm}|X|}
+    \hline
+    \textbf{Endpoint}        & POST /session/create?userId=group-2                                       \\
+    \hline
+    \textbf{Host}            & crypto-assignment.dangduongminhnhat2003.workers.dev                       \\
+    \hline
+    \textbf{Request Fields}  & algorithm, curveParameters (p, a, b, Gx, Gy, order)                       \\
+    \hline
+    \textbf{Response Fields} & sessionToken, serverPublicKey, serverSignaturePublicKey, sessionSignature \\
+    \hline
+    \textbf{Purpose}         & Initiate ECDH key exchange với P-256 curve parameters                     \\
+    \hline
+  \end{tabularx}
+  \caption{Session Create API - Chi tiết thực tế}
 \end{table}
 
 \textbf{Request Body (Thực tế):}
@@ -323,28 +360,28 @@ Sau khi patch và cài đặt lại APK, thực hiện test để xác minh bypa
 \textbf{Screenshot từ Burp Suite:}
 
 \begin{figure}[h]
-    \centering
-    \includegraphics[width=0.9\textwidth]{images/01-session-create-burp-capture.png}
-    \caption{Session Create API được chặn bắt trong Burp Suite}
+  \centering
+  \includegraphics[width=0.9\textwidth]{images/01-session-create-burp-capture.png}
+  \caption{Session Create API được chặn bắt trong Burp Suite}
 \end{figure}
 
 \textbf{API Call 2: Session Exchange}
 
 \begin{table}[h]
-    \centering
-    \small
-    \begin{tabularx}{\textwidth}{|p{3cm}|X|}
-        \hline
-        \textbf{Endpoint}        & POST /session/exchange?userId=group-2                                             \\
-        \hline
-        \textbf{Request Fields}  & sessionToken, clientPublicKey, clientPublicKeySignature, clientSignaturePublicKey \\
-        \hline
-        \textbf{Response Fields} & success, message, algorithm, sessionToken, clientSignatureVerified                \\
-        \hline
-        \textbf{Purpose}         & Complete ECDH key exchange với client public key và signatures                    \\
-        \hline
-    \end{tabularx}
-    \caption{Session Exchange API - Chi tiết thực tế}
+  \centering
+  \small
+  \begin{tabularx}{\textwidth}{|p{3cm}|X|}
+    \hline
+    \textbf{Endpoint}        & POST /session/exchange?userId=group-2                                             \\
+    \hline
+    \textbf{Request Fields}  & sessionToken, clientPublicKey, clientPublicKeySignature, clientSignaturePublicKey \\
+    \hline
+    \textbf{Response Fields} & success, message, algorithm, sessionToken, clientSignatureVerified                \\
+    \hline
+    \textbf{Purpose}         & Complete ECDH key exchange với client public key và signatures                    \\
+    \hline
+  \end{tabularx}
+  \caption{Session Exchange API - Chi tiết thực tế}
 \end{table}
 
 \textbf{Request Body (Thực tế):}
@@ -393,45 +430,45 @@ Sau khi patch và cài đặt lại APK, thực hiện test để xác minh bypa
 \textbf{Screenshot từ Burp Suite:}
 
 \begin{figure}[h]
-    \centering
-    \includegraphics[width=0.9\textwidth]{images/02-session-exchange-burp-capture.png}
-    \caption{Session Exchange API được chặn bắt trong Burp Suite}
+  \centering
+  \includegraphics[width=0.9\textwidth]{images/02-session-exchange-burp-capture.png}
+  \caption{Session Exchange API được chặn bắt trong Burp Suite}
 \end{figure}
 
 \textbf{Cryptographic Analysis (Dựa trên data thực tế):}
 
 \begin{itemize}
-    \item \textbf{Algorithm:} ECDH\_2 (Elliptic Curve Diffie-Hellman version 2)
-    \item \textbf{Curve:} P-256 (NIST secp256r1) - xác nhận từ curve parameters
-    \item \textbf{Signature:} ECDSA-P256 for authentication
-    \item \textbf{Key Size:} 256-bit (high security level)
-    \item \textbf{Session Management:} JWT tokens cho state tracking
-    \item \textbf{Signature Verification:} Dual signature system (client + server)
+  \item \textbf{Algorithm:} ECDH\_2 (Elliptic Curve Diffie-Hellman version 2)
+  \item \textbf{Curve:} P-256 (NIST secp256r1) - xác nhận từ curve parameters
+  \item \textbf{Signature:} ECDSA-P256 for authentication
+  \item \textbf{Key Size:} 256-bit (high security level)
+  \item \textbf{Session Management:} JWT tokens cho state tracking
+  \item \textbf{Signature Verification:} Dual signature system (client + server)
 \end{itemize}
 
 \textbf{Chi tiết Curve Parameters (P-256):}
 
 \begin{table}[h]
-    \centering
-    \small
-    \begin{tabular}{|p{2cm}|p{11cm}|}
-        \hline
-        \textbf{Parameter} & \textbf{Value}                                                                 \\
-        \hline
-        p                  & 115792089210356248762697446949407573530086143415290314195533631308867097853951 \\
-        \hline
-        a                  & -3                                                                             \\
-        \hline
-        b                  & 41058363725152142129326129780047268409114441015993725554835256314039467401291  \\
-        \hline
-        Gx                 & 48439561293906451759052585252797914202762949526041747995844080717082404635286  \\
-        \hline
-        Gy                 & 36134250956749795798585127919587881956611106672985015071877198253568414405109  \\
-        \hline
-        order              & 115792089210356248762697446949407573529996955224135760342422259061068512044369 \\
-        \hline
-    \end{tabular}
-    \caption{P-256 Curve Parameters - Dữ liệu thực tế từ API}
+  \centering
+  \small
+  \begin{tabularx}{\textwidth}{|p{2cm}|X|}
+    \hline
+    \textbf{Parameter} & \textbf{Value}                                                                 \\
+    \hline
+    p                  & 115792089210356248762697446949407573530086143415290314195533631308867097853951 \\
+    \hline
+    a                  & -3                                                                             \\
+    \hline
+    b                  & 41058363725152142129326129780047268409114441015993725554835256314039467401291  \\
+    \hline
+    Gx                 & 48439561293906451759052585252797914202762949526041747995844080717082404635286  \\
+    \hline
+    Gy                 & 36134250956749795798585127919587881956611106672985015071877198253568414405109  \\
+    \hline
+    order              & 115792089210356248762697446949407573529996955224135760342422259061068512044369 \\
+    \hline
+  \end{tabularx}
+  \caption{P-256 Curve Parameters - Dữ liệu thực tế từ API}
 \end{table}
 
 \subsubsection{Giai đoạn Messaging}
@@ -439,48 +476,48 @@ Sau khi patch và cài đặt lại APK, thực hiện test để xác minh bypa
 \textbf{API Call 3: Message Send}
 
 \begin{table}[h]
-    \centering
-    \small
-    \begin{tabular}{|p{3cm}|p{10cm}|}
-        \hline
-        \textbf{Endpoint}        & POST /message/send?userId=group-2                                                     \\
-        \hline
-        \textbf{Host}            & crypto-assignment.dangduongminhnhat2003.workers.dev                                   \\
-        \hline
-        \textbf{Request Fields}  & sessionToken, encryptedMessage, messageSignature, clientSignaturePublicKey            \\
-        \hline
-        \textbf{Response Fields} & success, encryptedResponse, sessionToken, messageSignatureVerified, responseSignature \\
-        \hline
-        \textbf{Purpose}         & Send encrypted message to SecureBot với end-to-end encryption                         \\
-        \hline
-    \end{tabular}
-    \caption{Message Send API - Chi tiết thực tế}
+  \centering
+  \small
+  \begin{tabularx}{\textwidth}{|p{3cm}|X|}
+    \hline
+    \textbf{Endpoint}        & POST /message/send?userId=group-2                                                     \\
+    \hline
+    \textbf{Host}            & crypto-assignment.dangduongminhnhat2003.workers.dev                                   \\
+    \hline
+    \textbf{Request Fields}  & sessionToken, encryptedMessage, messageSignature, clientSignaturePublicKey            \\
+    \hline
+    \textbf{Response Fields} & success, encryptedResponse, sessionToken, messageSignatureVerified, responseSignature \\
+    \hline
+    \textbf{Purpose}         & Send encrypted message to SecureBot với end-to-end encryption                         \\
+    \hline
+  \end{tabularx}
+  \caption{Message Send API - Chi tiết thực tế}
 \end{table}
 
 \textbf{Message Flow Analysis (Thực tế):}
 
 \begin{enumerate}
-    \item User gửi: ``what is your name ?''
-    \item Message được encrypt: \texttt{3xHDVhZj5VpLQ4YWJK/3Tkqphg7N9oyC2qcOkovQd4k6tv7ISkvUrVnR4VaJHwM=}
-    \item Server (SecureBot) decrypt và process
-    \item Bot response: ``I'm SecureBot [ROBOT] --- your friendly neighborhood crypto guardian!''
-    \item Response được encrypt: \texttt{9L4OZ3Y6JiO20dgFQ1LRSMdadhLBbmd5N6vGKqYYd9D0nou...}
+  \item User gửi: ``what is your name ?''
+  \item Message được encrypt: \texttt{3xHDVhZj5VpLQ4YWJK/3Tkqphg7N9oyC2qcOkovQd4k6tv7ISkvUrVnR4VaJHwM=}
+  \item Server (SecureBot) decrypt và process
+  \item Bot response: ``I'm SecureBot [ROBOT] --- your friendly neighborhood crypto guardian!''
+  \item Response được encrypt: \texttt{9L4OZ3Y6JiO20dgFQ1LRSMdadhLBbmd5N6vGKqYYd9D0nou...}
 \end{enumerate}
 
 \textbf{Chat Interface Screenshot:}
 
 \begin{figure}[h]
-    \centering
-    \includegraphics[width=0.7\textwidth]{images/chat-interface.png}
-    \caption{Giao diện cuộc hội thoại thực tế giữa User và SecureBot trong ứng dụng SMC}
+  \centering
+  \includegraphics[width=0.7\textwidth]{images/chat-interface.png}
+  \caption{Giao diện cuộc hội thoại thực tế giữa User và SecureBot trong ứng dụng SMC}
 \end{figure}
 
 \textbf{Screenshot từ Burp Suite:}
 
 \begin{figure}[h]
-    \centering
-    \includegraphics[width=0.9\textwidth]{images/03-message-send-burp-capture.png}
-    \caption{Message Send API được chặn bắt trong Burp Suite}
+  \centering
+  \includegraphics[width=0.9\textwidth]{images/03-message-send-burp-capture.png}
+  \caption{Message Send API được chặn bắt trong Burp Suite}
 \end{figure}
 
 \textbf{Request Body (Thực tế):}
@@ -521,11 +558,11 @@ Sau khi patch và cài đặt lại APK, thực hiện test để xác minh bypa
 \textbf{Security Features (Xác nhận từ traffic):}
 
 \begin{itemize}
-    \item \textbf{End-to-End Encryption:} Messages encrypted với ECDH shared key
-    \item \textbf{Message Authentication:} ECDSA signatures cho integrity
-    \item \textbf{Session Management:} JWT tokens updated per message
-    \item \textbf{Signature Verification:} Both client và server signatures verified
-    \item \textbf{No Plaintext Leakage:} All messages encrypted in transit
+  \item \textbf{End-to-End Encryption:} Messages encrypted với ECDH shared key
+  \item \textbf{Message Authentication:} ECDSA signatures cho integrity
+  \item \textbf{Session Management:} JWT tokens updated per message
+  \item \textbf{Signature Verification:} Both client và server signatures verified
+  \item \textbf{No Plaintext Leakage:} All messages encrypted in transit
 \end{itemize}
 
 \subsubsection{JWT Token Analysis}
@@ -558,11 +595,11 @@ Phân tích JWT tokens được sử dụng trong session management:
 
 \textbf{JWT Security Features:}
 \begin{itemize}
-    \item \textbf{Expiration:} 5-minute session timeout (300 seconds)
-    \item \textbf{Session ID:} Unique session identifier per connection
-    \item \textbf{Public Key Embedding:} Server public key embedded trong token
-    \item \textbf{Algorithm Specification:} ECDH\_2 algorithm specified
-    \item \textbf{HMAC Signature:} HS256 cho token integrity
+  \item \textbf{Expiration:} 5-minute session timeout (300 seconds)
+  \item \textbf{Session ID:} Unique session identifier per connection
+  \item \textbf{Public Key Embedding:} Server public key embedded trong token
+  \item \textbf{Algorithm Specification:} ECDH\_2 algorithm specified
+  \item \textbf{HMAC Signature:} HS256 cho token integrity
 \end{itemize}
 
 \subsection{Ánh xạ Source Code}
@@ -578,114 +615,114 @@ apktool d secure-app.apk -o secure-app-decompiled
 \textbf{Code Mapping Results (Thực tế):}
 
 \begin{table}[h]
-    \centering
-    \small
-    \begin{tabular}{|p{3.5cm}|p{3cm}|p{2cm}|p{4.5cm}|}
-        \hline
-        \textbf{API Endpoint} & \textbf{Smali File} & \textbf{Line} & \textbf{Component Found}                                   \\
-        \hline
-        /session/create       & LoginActivity.smali & 550           & Hardcoded URL construction                                 \\
-        \hline
-        /session/exchange     & Multiple files      & Various       & ecdh\_2, curveParameters, clientPublicKey, serverPublicKey \\
-        \hline
-        /message/send         & Multiple files      & Various       & encryptedMessage, messageSignature, encryptedResponse      \\
-        \hline
-    \end{tabular}
-    \caption{API to Source Code Mapping - Kết quả thực tế}
+  \centering
+  \small
+  \begin{tabularx}{\textwidth}{|p{3.5cm}|p{3cm}|p{2cm}|X|}
+    \hline
+    \textbf{API Endpoint} & \textbf{Smali File} & \textbf{Line} & \textbf{Component Found}                                   \\
+    \hline
+    /session/create       & LoginActivity.smali & 550           & Hardcoded URL construction                                 \\
+    \hline
+    /session/exchange     & Multiple files      & Various       & ecdh\_2, curveParameters, clientPublicKey, serverPublicKey \\
+    \hline
+    /message/send         & Multiple files      & Various       & encryptedMessage, messageSignature, encryptedResponse      \\
+    \hline
+  \end{tabularx}
+  \caption{API to Source Code Mapping - Kết quả thực tế}
 \end{table}
 
 \textbf{Chi tiết Code Mapping:}
 
 \begin{itemize}
-    \item \textbf{Session Create URL:}
-          \begin{lstlisting}[language=java]
+  \item \textbf{Session Create URL:}
+        \begin{lstlisting}[language=java]
 const-string v7, "https://crypto-assignment.dangduongminhnhat2003.workers.dev/session/create?userId="
     \end{lstlisting}
 
-    \item \textbf{ECDH Components Found:} ecdh\_2 algorithm, curve parameters, public key operations
-    \item \textbf{Messaging Components:} Encryption/decryption logic, signature verification
-    \item \textbf{Security Implementation:} Distributed across multiple smali files
+  \item \textbf{ECDH Components Found:} ecdh\_2 algorithm, curve parameters, public key operations
+  \item \textbf{Messaging Components:} Encryption/decryption logic, signature verification
+  \item \textbf{Security Implementation:} Distributed across multiple smali files
 \end{itemize}
 
 \textbf{Screenshots từ Code Analysis:}
 
 \begin{figure}[h]
-    \centering
-    \includegraphics[width=0.8\textwidth]{images/01-session-create-code-found.png}
-    \caption{Session Create URL được tìm thấy trong LoginActivity.smali}
+  \centering
+  \includegraphics[width=0.8\textwidth]{images/01-session-create-code-found.png}
+  \caption{Session Create URL được tìm thấy trong LoginActivity.smali}
 \end{figure}
 
 \begin{figure}[h]
-    \centering
-    \includegraphics[width=0.8\textwidth]{images/02-session-exchange-search.png}
-    \caption{Session Exchange components trong decompiled code}
+  \centering
+  \includegraphics[width=0.8\textwidth]{images/02-session-exchange-search.png}
+  \caption{Session Exchange components trong decompiled code}
 \end{figure}
 
 \begin{figure}[h]
-    \centering
-    \includegraphics[width=0.8\textwidth]{images/03-ecdh2-algorithm-search.png}
-    \caption{ECDH\_2 algorithm components trong decompiled code}
+  \centering
+  \includegraphics[width=0.8\textwidth]{images/03-ecdh2-algorithm-search.png}
+  \caption{ECDH\_2 algorithm components trong decompiled code}
 \end{figure}
 
 \begin{figure}[h]
-    \centering
-    \includegraphics[width=0.8\textwidth]{images/04-curve-parameters-search.png}
-    \caption{Curve Parameters được tìm thấy trong source code}
+  \centering
+  \includegraphics[width=0.8\textwidth]{images/04-curve-parameters-search.png}
+  \caption{Curve Parameters được tìm thấy trong source code}
 \end{figure}
 
 \begin{figure}[h]
-    \centering
-    \includegraphics[width=0.8\textwidth]{images/07-message-send-search.png}
-    \caption{Message Send endpoint trong decompiled code}
+  \centering
+  \includegraphics[width=0.8\textwidth]{images/07-message-send-search.png}
+  \caption{Message Send endpoint trong decompiled code}
 \end{figure}
 
 \begin{figure}[h]
-    \centering
-    \includegraphics[width=0.8\textwidth]{images/08-encrypted-message-found.png}
-    \caption{Encrypted message handling trong messaging components}
+  \centering
+  \includegraphics[width=0.8\textwidth]{images/08-encrypted-message-found.png}
+  \caption{Encrypted message handling trong messaging components}
 \end{figure}
 
 \begin{figure}[h]
-    \centering
-    \includegraphics[width=0.8\textwidth]{images/05-client-public-key-search.png}
-    \caption{Client Public Key components trong decompiled code}
+  \centering
+  \includegraphics[width=0.8\textwidth]{images/05-client-public-key-search.png}
+  \caption{Client Public Key components trong decompiled code}
 \end{figure}
 
 \begin{figure}[h]
-    \centering
-    \includegraphics[width=0.8\textwidth]{images/06-server-public-key-search.png}
-    \caption{Server Public Key handling trong source code}
+  \centering
+  \includegraphics[width=0.8\textwidth]{images/06-server-public-key-search.png}
+  \caption{Server Public Key handling trong source code}
 \end{figure}
 
 \begin{figure}[h]
-    \centering
-    \includegraphics[width=0.8\textwidth]{images/09-message-signature-found.png}
-    \caption{Message signature implementation trong source code}
+  \centering
+  \includegraphics[width=0.8\textwidth]{images/09-message-signature-found.png}
+  \caption{Message signature implementation trong source code}
 \end{figure}
 
 \begin{figure}[h]
-    \centering
-    \includegraphics[width=0.8\textwidth]{images/10-encrypted-response-found.png}
-    \caption{Encrypted response handling trong messaging system}
+  \centering
+  \includegraphics[width=0.8\textwidth]{images/10-encrypted-response-found.png}
+  \caption{Encrypted response handling trong messaging system}
 \end{figure}
 
 \subsection{Bảng Tóm tắt API}
 
 \begin{table}[h]
-    \centering
-    \small
-    \begin{tabular}{|p{1cm}|p{3.5cm}|p{2cm}|p{3cm}|p{3cm}|p{1.5cm}|}
-        \hline
-        \textbf{\#} & \textbf{Endpoint}                & \textbf{Method} & \textbf{Request Fields}                                 & \textbf{Response Fields}                        & \textbf{Security} \\
-        \hline
-        1           & /session/create?userId=group-2   & POST            & algorithm, curveParameters                              & sessionToken, serverPublicKey, sessionSignature & High              \\
-        \hline
-        2           & /session/exchange?userId=group-2 & POST            & sessionToken, clientPublicKey, clientPublicKeySignature & success, clientSignatureVerified                & High              \\
-        \hline
-        3           & /message/send?userId=group-2     & POST            & sessionToken, encryptedMessage, messageSignature        & encryptedResponse, responseSignature            & High              \\
-        \hline
-    \end{tabular}
-    \caption{Bảng Tóm tắt API - Dữ liệu thực tế từ Burp Suite}
+  \centering
+  \small
+  \begin{tabularx}{\textwidth}{|p{0.5cm}|X|p{1.5cm}|p{3cm}|p{3cm}|p{1.5cm}|}
+    \hline
+    \textbf{\#} & \textbf{Endpoint}                & \textbf{Method} & \textbf{Request Fields}                                 & \textbf{Response Fields}                        & \textbf{Security} \\
+    \hline
+    1           & /session/create?userId=group-2   & POST            & algorithm, curveParameters                              & sessionToken, serverPublicKey, sessionSignature & High              \\
+    \hline
+    2           & /session/exchange?userId=group-2 & POST            & sessionToken, clientPublicKey, clientPublicKeySignature & success, clientSignatureVerified                & High              \\
+    \hline
+    3           & /message/send?userId=group-2     & POST            & sessionToken, encryptedMessage, messageSignature        & encryptedResponse, responseSignature            & High              \\
+    \hline
+  \end{tabularx}
+  \caption{Bảng Tóm tắt API - Dữ liệu thực tế từ Burp Suite}
 \end{table}
 
 \subsection{Đánh giá Bảo mật}
@@ -693,11 +730,11 @@ const-string v7, "https://crypto-assignment.dangduongminhnhat2003.workers.dev/se
 \subsubsection{Điểm mạnh}
 
 \begin{itemize}
-    \item \textbf{Strong Cryptography:} ECDH\_2 + ECDSA-P256 implementation
-    \item \textbf{SSL Certificate Pinning:} Multiple layers protection
-    \item \textbf{End-to-End Encryption:} Messages encrypted với shared secret
-    \item \textbf{Forward Secrecy:} Ephemeral keys cho mỗi session
-    \item \textbf{Message Authentication:} ECDSA signatures prevent tampering
+  \item \textbf{Strong Cryptography:} ECDH\_2 + ECDSA-P256 implementation
+  \item \textbf{SSL Certificate Pinning:} Multiple layers protection
+  \item \textbf{End-to-End Encryption:} Messages encrypted với shared secret
+  \item \textbf{Forward Secrecy:} Ephemeral keys cho mỗi session
+  \item \textbf{Message Authentication:} ECDSA signatures prevent tampering
 \end{itemize}
 
 \subsubsection{Điểm yếu và Khuyến nghị}
@@ -705,54 +742,54 @@ const-string v7, "https://crypto-assignment.dangduongminhnhat2003.workers.dev/se
 \textbf{Vulnerabilities được phát hiện:}
 
 \begin{table}[h]
-    \centering
-    \small
-    \begin{tabular}{|p{3cm}|p{2cm}|p{4cm}|p{4cm}|}
-        \hline
-        \textbf{Vulnerability} & \textbf{Severity} & \textbf{Impact}      & \textbf{Recommendation}             \\
-        \hline
-        APK Tampering          & High              & SSL pinning bypass   & Code obfuscation + integrity checks \\
-        \hline
-        Static Analysis        & Medium            & Code exposure        & ProGuard/R8 obfuscation             \\
-        \hline
-        Root Detection         & Medium            & Runtime manipulation & Anti-debugging + root detection     \\
-        \hline
-        Certificate Pinning    & High              & MITM attacks         & Multiple pinning layers + RASP      \\
-        \hline
-    \end{tabular}
-    \caption{Security Vulnerabilities - Assessment và Recommendations}
+  \centering
+  \small
+  \begin{tabularx}{\textwidth}{|p{3cm}|p{2cm}|p{4cm}|X|}
+    \hline
+    \textbf{Vulnerability} & \textbf{Severity} & \textbf{Impact}      & \textbf{Recommendation}             \\
+    \hline
+    APK Tampering          & High              & SSL pinning bypass   & Code obfuscation + integrity checks \\
+    \hline
+    Static Analysis        & Medium            & Code exposure        & ProGuard/R8 obfuscation             \\
+    \hline
+    Root Detection         & Medium            & Runtime manipulation & Anti-debugging + root detection     \\
+    \hline
+    Certificate Pinning    & High              & MITM attacks         & Multiple pinning layers + RASP      \\
+    \hline
+  \end{tabularx}
+  \caption{Security Vulnerabilities - Assessment và Recommendations}
 \end{table}
 
 \textbf{Detailed Recommendations:}
 
 \begin{enumerate}
-    \item \textbf{Runtime Application Self-Protection (RASP):}
-          \begin{itemize}
-              \item Implement runtime integrity checks
-              \item Detect APK modification at runtime
-              \item Monitor for debugging tools và emulators
-          \end{itemize}
+  \item \textbf{Runtime Application Self-Protection (RASP):}
+        \begin{itemize}
+          \item Implement runtime integrity checks
+          \item Detect APK modification at runtime
+          \item Monitor for debugging tools và emulators
+        \end{itemize}
 
-    \item \textbf{Enhanced Certificate Pinning:}
-          \begin{itemize}
-              \item Multiple certificate pinning techniques
-              \item Dynamic certificate validation
-              \item Backup pinning mechanisms
-          \end{itemize}
+  \item \textbf{Enhanced Certificate Pinning:}
+        \begin{itemize}
+          \item Multiple certificate pinning techniques
+          \item Dynamic certificate validation
+          \item Backup pinning mechanisms
+        \end{itemize}
 
-    \item \textbf{Code Protection:}
-          \begin{itemize}
-              \item ProGuard/R8 code obfuscation
-              \item String encryption for sensitive data
-              \item Control flow obfuscation
-          \end{itemize}
+  \item \textbf{Code Protection:}
+        \begin{itemize}
+          \item ProGuard/R8 code obfuscation
+          \item String encryption for sensitive data
+          \item Control flow obfuscation
+        \end{itemize}
 
-    \item \textbf{Anti-Analysis Measures:}
-          \begin{itemize}
-              \item Root/jailbreak detection
-              \item Emulator detection
-              \item Debugging detection và prevention
-          \end{itemize}
+  \item \textbf{Anti-Analysis Measures:}
+        \begin{itemize}
+          \item Root/jailbreak detection
+          \item Emulator detection
+          \item Debugging detection và prevention
+        \end{itemize}
 \end{enumerate}
 
 \subsection{Kết luận}
@@ -760,31 +797,31 @@ const-string v7, "https://crypto-assignment.dangduongminhnhat2003.workers.dev/se
 Task 3.1 đã hoàn thành thành công việc chặn bắt và phân tích API của ứng dụng SMC. Quá trình bao gồm:
 
 \begin{enumerate}
-    \item \textbf{Environment Setup:} Thiết lập môi trường Android + Burp Suite
-    \item \textbf{SSL Pinning Bypass:} Thành công bypass multiple layers protection
-    \item \textbf{API Analysis:} Phân tích chi tiết 3 API phases với crypto protocols
-    \item \textbf{Security Assessment:} Đánh giá implementation mạnh với ECDH + ECDSA
+  \item \textbf{Environment Setup:} Thiết lập môi trường Android + Burp Suite
+  \item \textbf{SSL Pinning Bypass:} Thành công bypass multiple layers protection
+  \item \textbf{API Analysis:} Phân tích chi tiết 3 API phases với crypto protocols
+  \item \textbf{Security Assessment:} Đánh giá implementation mạnh với ECDH + ECDSA
 \end{enumerate}
 
 \textbf{Kết quả chính:}
 
 \begin{itemize}
-    \item \textbf{API Captured:} 3 API endpoints với đầy đủ request/response data
-    \item \textbf{Crypto Analysis:} ECDH\_2 + ECDSA-P256 với P-256 curve parameters
-    \item \textbf{Message Flow:} End-to-end encryption từ ``what is your name ?'' đến SecureBot response
-    \item \textbf{Code Mapping:} Thành công map API endpoints với decompiled smali code
-    \item \textbf{Security Level:} High - Strong cryptographic implementation
+  \item \textbf{API Captured:} 3 API endpoints với đầy đủ request/response data
+  \item \textbf{Crypto Analysis:} ECDH\_2 + ECDSA-P256 với P-256 curve parameters
+  \item \textbf{Message Flow:} End-to-end encryption từ ``what is your name ?'' đến SecureBot response
+  \item \textbf{Code Mapping:} Thành công map API endpoints với decompiled smali code
+  \item \textbf{Security Level:} High - Strong cryptographic implementation
 \end{itemize}
 
 \textbf{Thống kê thực hiện:}
 
 \begin{itemize}
-    \item \textbf{APIs Analyzed:} 3 endpoints (session/create, session/exchange, message/send)
-    \item \textbf{Screenshots Captured:} 15+ screenshots từ Burp Suite và code analysis
-    \item \textbf{Code Files Analyzed:} LoginActivity.smali + multiple crypto components
-    \item \textbf{Security Assessment:} Comprehensive analysis với recommendations
-    \item \textbf{SSL Pinning Bypass:} Thành công patch 3 layers protection
-    \item \textbf{Cryptographic Protocols:} ECDH\_2 + ECDSA-P256 + JWT analysis
+  \item \textbf{APIs Analyzed:} 3 endpoints (session/create, session/exchange, message/send)
+  \item \textbf{Screenshots Captured:} 15+ screenshots từ Burp Suite và code analysis
+  \item \textbf{Code Files Analyzed:} LoginActivity.smali + multiple crypto components
+  \item \textbf{Security Assessment:} Comprehensive analysis với recommendations
+  \item \textbf{SSL Pinning Bypass:} Thành công patch 3 layers protection
+  \item \textbf{Cryptographic Protocols:} ECDH\_2 + ECDSA-P256 + JWT analysis
 \end{itemize}
 
 \subsection{Performance Analysis}
@@ -792,29 +829,29 @@ Task 3.1 đã hoàn thành thành công việc chặn bắt và phân tích API 
 \textbf{API Response Times (Measured):}
 
 \begin{table}[h]
-    \centering
-    \small
-    \begin{tabular}{|p{4cm}|p{2cm}|p{2cm}|p{2cm}|p{3cm}|}
-        \hline
-        \textbf{API Endpoint} & \textbf{Avg Time} & \textbf{Min Time} & \textbf{Max Time} & \textbf{Data Size} \\
-        \hline
-        /session/create       & 245ms             & 198ms             & 312ms             & 479 bytes request  \\
-        \hline
-        /session/exchange     & 189ms             & 156ms             & 234ms             & 2.1KB request      \\
-        \hline
-        /message/send         & 167ms             & 134ms             & 201ms             & 2.4KB request      \\
-        \hline
-    \end{tabular}
-    \caption{API Performance Metrics - Measured từ Burp Suite}
+  \centering
+  \small
+  \begin{tabularx}{\textwidth}{|X|p{2cm}|p{2cm}|p{2cm}|p{3cm}|}
+    \hline
+    \textbf{API Endpoint} & \textbf{Avg Time} & \textbf{Min Time} & \textbf{Max Time} & \textbf{Data Size} \\
+    \hline
+    /session/create       & 245ms             & 198ms             & 312ms             & 479 bytes request  \\
+    \hline
+    /session/exchange     & 189ms             & 156ms             & 234ms             & 2.1KB request      \\
+    \hline
+    /message/send         & 167ms             & 134ms             & 201ms             & 2.4KB request      \\
+    \hline
+  \end{tabularx}
+  \caption{API Performance Metrics - Measured từ Burp Suite}
 \end{table}
 
 \textbf{Cryptographic Operations Performance:}
 
 \begin{itemize}
-    \item \textbf{ECDH Key Generation:} ~150ms (client-side)
-    \item \textbf{ECDSA Signature:} ~45ms per signature
-    \item \textbf{Message Encryption:} ~12ms per message
-    \item \textbf{JWT Processing:} ~8ms per token
+  \item \textbf{ECDH Key Generation:} ~150ms (client-side)
+  \item \textbf{ECDSA Signature:} ~45ms per signature
+  \item \textbf{Message Encryption:} ~12ms per message
+  \item \textbf{JWT Processing:} ~8ms per token
 \end{itemize}
 
 \textbf{Giá trị học tập:} Task này cung cấp kinh nghiệm thực tế về mobile security analysis, MITM techniques, SSL pinning bypass, và cryptographic protocol analysis trong môi trường thực tế.
@@ -824,56 +861,56 @@ Task 3.1 đã hoàn thành thành công việc chặn bắt và phân tích API 
 \textbf{Tools được sử dụng:}
 
 \begin{table}[h]
-    \centering
-    \small
-    \begin{tabular}{|p{3cm}|p{2cm}|p{8cm}|}
-        \hline
-        \textbf{Tool}  & \textbf{Version} & \textbf{Purpose}                            \\
-        \hline
-        Burp Suite     & v2025.8.7        & MITM proxy, HTTP/HTTPS traffic interception \\
-        \hline
-        Android Studio & Latest           & Android development environment, emulator   \\
-        \hline
-        apktool        & Latest           & APK decompilation và recompilation          \\
-        \hline
-        apksigner      & Android SDK      & APK signing với debug keystore              \\
-        \hline
-        adb            & Android SDK      & Android Debug Bridge, device communication  \\
-        \hline
-        OpenSSL        & System           & Certificate format conversion (DER to PEM)  \\
-        \hline
-    \end{tabular}
-    \caption{Tools Summary - Môi trường phân tích}
+  \centering
+  \small
+  \begin{tabularx}{\textwidth}{|p{3cm}|p{2cm}|X|}
+    \hline
+    \textbf{Tool}  & \textbf{Version} & \textbf{Purpose}                            \\
+    \hline
+    Burp Suite     & v2025.8.7        & MITM proxy, HTTP/HTTPS traffic interception \\
+    \hline
+    Android Studio & Latest           & Android development environment, emulator   \\
+    \hline
+    Frida          & Latest           & Dynamic instrumentation framework           \\
+    \hline
+    frida-server   & ARM64 binary     & Runtime hooking trên Android device         \\
+    \hline
+    adb            & Android SDK      & Android Debug Bridge, device communication  \\
+    \hline
+    OpenSSL        & System           & Certificate format conversion (DER to PEM)  \\
+    \hline
+  \end{tabularx}
+  \caption{Tools Summary - Môi trường phân tích}
 \end{table}
 
 \textbf{Techniques được áp dụng:}
 
 \begin{itemize}
-    \item \textbf{MITM Attack:} Man-in-the-middle proxy setup với Burp Suite
-    \item \textbf{SSL Pinning Bypass:} APK patching technique để bypass certificate validation
-    \item \textbf{Static Analysis:} Decompiled code analysis với apktool
-    \item \textbf{Dynamic Analysis:} Runtime traffic analysis và API interception
-    \item \textbf{Cryptographic Analysis:} ECDH key exchange và ECDSA signature analysis
-    \item \textbf{Protocol Analysis:} HTTP/HTTPS request/response analysis
+  \item \textbf{MITM Attack:} Man-in-the-middle proxy setup với Burp Suite
+  \item \textbf{SSL Pinning Bypass:} Frida dynamic instrumentation để bypass certificate validation tại runtime
+  \item \textbf{Static Analysis:} Decompiled code analysis với apktool
+  \item \textbf{Dynamic Analysis:} Runtime traffic analysis và API interception
+  \item \textbf{Cryptographic Analysis:} ECDH key exchange và ECDSA signature analysis
+  \item \textbf{Protocol Analysis:} HTTP/HTTPS request/response analysis
 \end{itemize}
 
 \textbf{Challenges và Solutions:}
 
 \begin{table}[h]
-    \centering
-    \small
-    \begin{tabular}{|p{4cm}|p{4cm}|p{5cm}|}
-        \hline
-        \textbf{Challenge}      & \textbf{Root Cause}        & \textbf{Solution Applied}                      \\
-        \hline
-        SSL Certificate Pinning & Multiple validation layers & APK patching + system certificate installation \\
-        \hline
-        Platform Compatibility  & System architecture        & Compatible versions của tất cả tools           \\
-        \hline
-        Emulator Permissions    & System partition read-only & Writable system flag + root access             \\
-        \hline
-        Certificate Format      & DER vs PEM formats         & OpenSSL conversion + hash naming               \\
-        \hline
-    \end{tabular}
-    \caption{Technical Challenges - Solutions Summary}
+  \centering
+  \small
+  \begin{tabularx}{\textwidth}{|p{4cm}|p{4cm}|X|}
+    \hline
+    \textbf{Challenge}      & \textbf{Root Cause}        & \textbf{Solution Applied}                                       \\
+    \hline
+    SSL Certificate Pinning & Multiple validation layers & Frida dynamic instrumentation + system certificate installation \\
+    \hline
+    Platform Compatibility  & System architecture        & Compatible versions của tất cả tools                            \\
+    \hline
+    Emulator Permissions    & System partition read-only & Writable system flag + root access                              \\
+    \hline
+    Certificate Format      & DER vs PEM formats         & OpenSSL conversion + hash naming                                \\
+    \hline
+  \end{tabularx}
+  \caption{Technical Challenges - Solutions Summary}
 \end{table}
