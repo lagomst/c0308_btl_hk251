@@ -5,7 +5,6 @@ import hashlib
 import hmac
 from datetime import datetime
 import time
-import my_secret
 import json
 from Crypto.Util.number import bytes_to_long, long_to_bytes
 from Crypto.Cipher.AES import MODE_GCM
