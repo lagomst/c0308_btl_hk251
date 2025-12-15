@@ -1,0 +1,67 @@
+% File: report/contents/2.tex
+\section{Tấn công Mã hóa Many-Time Pad (MTP)}\label{sec:mtp}
+
+\subsection{Giới thiệu và lỗ hổng}
+
+Bài toán khai thác ở đây tận dụng lỗ hổng nghiêm trọng khi cùng một khóa $K$ được sử dụng nhiều lần để mã hóa nhiều bản rõ khác nhau (many-time pad). Phép mã hóa áp dụng XOR cho mỗi bản rõ:
+
+\[
+C_i = M_i \oplus K
+\]
+
+Khi cùng một khóa được tái sử dụng, an toàn của mã OTP bị phá vỡ, cho phép phân tích thống kê để suy ra khóa $K$ hoặc các phần của nó.
+
+\subsection{Chiến lược tấn công}
+
+Do độ dài hữu hạn của khóa (bị giới hạn bởi độ dài của bản mã ngắn nhất, gọi là \texttt{min\_len}), ta có thể tấn công từng byte của khóa độc lập theo từng cột (byte position).
+
+\subsubsection{Nguyên lý cơ bản}
+
+Với mỗi vị trí $i$ của khóa, mục tiêu là tìm byte $K[i]$ sao cho khi giải mã các byte tương ứng của các bản mã $C_j[i]$ ta thu được các ký tự hợp lý trong bản rõ $M_j[i]$. Nếu $K[i]$ đúng, thì
+
+\[
+M_j[i] = C_j[i] \oplus K[i]
+\]
+
+và các ký tự thu được sẽ có phân bố giống với văn bản thông thường (ASCII văn bản), thay vì các ký tự điều khiển hay ký tự rác.
+
+\subsubsection{Kỹ thuật chấm điểm}
+
+Phương pháp thực nghiệm là thử mọi giá trị byte trong khoảng $[0,255]$ cho $K[i]$ và chấm điểm kết quả giải mã trên cột đó theo tần suất ký tự hợp lý. Các loại ký tự được chấm điểm như sau:
+
+\begin{itemize}
+  \item \textbf{Dấu cách (space), ASCII 32}: điểm cao (ký tự phổ biến nhất trong văn bản tiếng Việt/Anh).
+  \item \textbf{Chữ cái thường (a--z)}: điểm cao.
+  \item \textbf{Chữ cái hoa (A--Z), chữ số, dấu câu}: điểm trung bình.
+  \item \textbf{Ký tự điều khiển (ASCII 0--31)}: phạt nặng (gần như không xuất hiện trong bản rõ thông thường).
+\end{itemize}
+
+Quá trình thu được khóa tại vị trí $i$ là: tính tổng điểm cho từng giá trị đoán $K_{\text{guess}}$ khi áp dụng lên tất cả các $C_j[i]$; giá trị có tổng điểm cao nhất được chọn làm $K[i]$.
+
+\subsection{Các bước thực hiện tổng quát}
+
+\begin{enumerate}
+  \item \textbf{Chuẩn bị dữ liệu:} chuyển tất cả các bản mã hex sang định dạng bytes.
+  \item \textbf{Xác định độ dài khóa:} lấy độ dài của bản mã ngắn nhất (\texttt{min\_len}).
+  \item \textbf{Vòng lặp tấn công chính:} với mỗi vị trí $i\in[0,\texttt{min\_len}-1]$, thử mọi giá trị $K_{\text{guess}}\in\{0,\dots,255\}$ và chấm điểm; chọn giá trị có điểm cao nhất làm $K[i]$.
+  \item \textbf{Giải mã cuối cùng:} sử dụng khóa $K$ tìm được để giải mã tất cả các bản mã $C_i$ (ít nhất trên phạm vi \texttt{min\_len}).
+\end{enumerate}
+
+\subsection{Tinh chỉnh thủ công (Crib Dragging)}
+
+Thuật toán chấm điểm tự động thường chính xác cao (thực nghiệm khoảng 90--95\%). Tuy nhiên có thể còn vài ký tự sai hoặc cụm từ chưa chính xác trong bản rõ thu được; khi đó cần tinh chỉnh thủ công:
+
+\begin{enumerate}
+  \item Đoán một hoặc vài ký tự hợp lý trong bản rõ (ví dụ muốn từ \"Th.s\" thành \"This\", đoán ký tự bị thiếu).
+  \item Tính lại byte khóa tại vị trí đó bằng công thức XOR ngược:
+
+  \[
+  K_{\text{đúng}}[i] = C_{\text{bản mã}}[i] \oplus M_{\text{đoán}}[i]
+  \]
+
+  \item Cập nhật byte khóa bằng tay và giải mã lại để kiểm tra.
+\end{enumerate}
+
+\subsection{Ghi chú}
+
+Phương pháp này tận dụng điểm yếu cơ bản của việc tái sử dụng khóa trong mã XOR. Kết hợp chấm điểm tự động và tinh chỉnh thủ công thường cho kết quả tối ưu khi tấn công many-time pad.
