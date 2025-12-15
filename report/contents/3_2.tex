@@ -86,14 +86,14 @@ function ecdsa_sign(message, generator, privkey) -> (r, s):
 
     loop forever:  # Repeat until a valid signature is produced
         k = random integer in [1, order-1]  # Random nonce k (ephemeral secret)
-        P = generator · k  # Compute point R = k * G
+        P = generator * k  # Compute point R = k * G
         if P is None:
             raise Error("Scalar multiplication failed")
 
         r = P.x mod order  # r is the x-coordinate of R modulo curve order
-        if r == 0: continue  # Invalid if r = 0 → try new k
-        s = (k⁻¹ · (z + r · privkey)) mod order  # Standard ECDSA formula for s
-        if s == 0: continue  # Invalid if s = 0 → try new k
+        if r == 0: continue  # Invalid if r = 0, try new k
+        s = (k^-1 * (z + r * privkey)) mod order  # Standard ECDSA formula for s
+        if s == 0: continue  # Invalid if s = 0, try new k
 
         return (r, s)
 
@@ -105,10 +105,10 @@ function ecdsa_verify(message, generator, pubkey_point, r, s) -> bool:
 
     z = SHA256(message)
     s_inv = modular_inverse(s, order)
-    u1 = (z · s_inv) mod order
-    u2 = (r · s_inv) mod order
+    u1 = (z * s_inv) mod order
+    u2 = (r * s_inv) mod order
 
-    P = (generator · u1) + (pubkey_point · u2)  # Reconstruct verification point
+    P = (generator * u1) + (pubkey_point * u2)  # Reconstruct verification point
     if P.is_infinity():
         raise Error("Verification point is infinity")
 
@@ -118,14 +118,15 @@ function ecdsa_verify(message, generator, pubkey_point, r, s) -> bool:
 # Create a one-time (ephemeral) signature for any message
 function ephemeral_sign_message(message, generator) -> (ephemeral_pubkey, r, s):
     ephemeral_privkey = random integer in [1, order-1]  # Temporary private key
-    ephemeral_pubkey = generator · ephemeral_privkey   # Corresponding public key R
+    ephemeral_pubkey = generator * ephemeral_privkey   # Corresponding public key R
 
     (r, s) = ecdsa_sign(message, generator, ephemeral_privkey)
     return (ephemeral_pubkey, r, s)
-}
+
+\end{lstlisting}
 
 \subsubsection{Client instances}
-\texttt{
+\begin{lstlisting}
 class Client:
     fields:
         server: Server # The server instance where a client connect to
@@ -151,7 +152,7 @@ class Client:
         # Store server's long-term public key
         self.server_pubkey = (server_pubkey_xy[0], server_pubkey_xy[1])
 
-        # 2. Verify server's signature on session data → trust that session came from real server
+        # 2. Verify server's signature on session data, trust that session came from real server
         sessionDataStr = json_stringify(session_data)
         sig_pubkey_point = (server_sig_pubkey_xy[0], server_sig_pubkey_xy[1])
         (r, s) = sig_tuple
@@ -166,10 +167,10 @@ class Client:
     function do_key_exchange() -> void:
         # 1. Generate client's long-term ECDH key pair
         privkey = random integer in [1, self.ecdh.order - 1]
-        pubkey = self.ecdh.generator · privkey
+        pubkey = self.ecdh.generator * privkey
 
         # 2. Compute shared secret using server's public key
-        shared_point = self.server_pubkey · privkey
+        shared_point = self.server_pubkey * privkey
         shared_secret = shared_point.x
 
         # 3. Derive the same AES key as the server
@@ -190,7 +191,7 @@ class Client:
             (ephemeral_pubkey.x, ephemeral_pubkey.y)  # Ephemeral public key
         )
 
-        if result ≠ "success":
+        if result != "success":
             raise Error("Key exchange failed")
 
         self.hasLogined = true
@@ -207,7 +208,7 @@ class Client:
         iv = random_bytes(12)
         encrypted_message = aes_gcm_encrypt(message.encode(), self.aes_key, iv, mac_len=16)
 
-        # 2. Sign the ciphertext with ephemeral key → server can verify integrity
+        # 2. Sign the ciphertext with ephemeral key, server can verify integrity
         signing_message = base64(iv + encrypted_message)
         (ephemeral_pubkey, r, s) = ephemeral_sign_message(signing_message, self.ecdh.generator)
 
@@ -266,13 +267,13 @@ class Server:
         # 2. Serialize session data to sign
         sessionDataStr = json_stringify(session_data)
 
-        # 3. Sign session data with an ephemeral key → proves server created this session
+        # 3. Sign session data with an ephemeral key, proves server created this session
         (ephemeral_pubkey, r, s) = ephemeral_sign_message(sessionDataStr, ecdh.generator)
         (ephe_x, ephe_y) = ephemeral_pubkey.(x, y)
 
         # 4. Generate server's long-term ECDH key pair for this session
         privkey = random integer in [1, ecdh.order - 1]
-        pubkey = ecdh.generator · privkey
+        pubkey = ecdh.generator * privkey
         (pub_x, pub_y) = pubkey.(x, y)
 
         # Store for later use in key exchange
@@ -294,7 +295,7 @@ class Server:
         self.client_pubkey = client_pubkey
 
         # 2. Compute ECDH shared secret (only x-coordinate used)
-        shared_point = client_pubkey · self.privkey
+        shared_point = client_pubkey * self.privkey
         self.shared_secret = shared_point.x
 
         # 3. Derive AES-256 key using PBKDF2 (zero salt, 1000 iterations)
@@ -307,7 +308,7 @@ class Server:
             "y": client_pubkey.y    
         })
 
-        # 5. Verify client's ephemeral signature → proves they control the private key
+        # 5. Verify client's ephemeral signature, proves they control the private key
         ephe_pubkey_point = (client_sig_pubkey_xy.x, client_sig_pubkey_xy.y)
         (r, s) = client_rs
 
@@ -320,7 +321,7 @@ class Server:
     function reply_message(ciphertext, client_iv, client_sig_pubkey_xy, client_rs)
         -> (encrypted_reply, reply_iv, reply_sig_pubkey_xy, reply_rs):
 
-        # 1. Verify client's signature over the ciphertext → prevents tampering
+        # 1. Verify client's signature over the ciphertext, prevents tampering
         sig_pubkey_point = (client_sig_pubkey_xy.x, client_sig_pubkey_xy.y)
         (r, s) = client_rs
 
@@ -353,8 +354,7 @@ class Server:
 
 \subsection{Runnable reimplementation}
 Hiện thực mô phỏng client và server bằng Python được cung cấp ở dưới, kèm theo hướng dẫn cài đặt và chạy chương trình. Hiện thực bao gồm cả tính toán của ECDH ở trong \texttt{curve.py}. Các tinh toán sử dụng hệ toạ độ projective (x, y, z), và có thể trả về toạ độ affine (x, y) theo yêu cầu.
-
-Link code: \texttt{https://github.com/lagomst/c0308_btl_hk251/blob/main/smc/legacy_code}
+Xem thêm ở \texttt{/smc/legacy\_code}.
 
 \begin{figure}[H]
     \centering
