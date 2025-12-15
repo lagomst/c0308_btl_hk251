@@ -1,0 +1,363 @@
+\section{Re-implementation \& Protocol Reconstruction}
+\subsection{Sequence of protocol messages exchanged}
+\begin{enumerate}
+    \item \textbf{Initialization}: Nếu client đã khởi tạo session từ trước với server, client sẽ thử khôi phục session với \texttt{sessionToken} cũ. Server có thể xác thực token để tiếp tục session hoặc từ chối và yêu cầu login mới.
+
+    \item \textbf{Login}: Nếu yêu cầu login, server sẽ chọn giải thuật mã hoá và các thông số dựa trên \texttt{user-id}. Ở \texttt{user-id} là ``group-2'', giải thuật ``ecdh\_2'' được dùng, bao gồm giải thuật trao đổi khoá ECDH với thông số như bảng bên dưới.
+
+        \begin{enumerate}
+            \item \textbf{Server response}: Sau khi xác thực khoá và chữ ký, server gửi một response cho client gồm một \texttt{sessionToken} mới, khoá công khai lâu dài của server (\texttt{serverPublicKey}), khoá công khai ephemeral (\texttt{serverSignaturePublicKey}), và chữ ký cho session (\texttt{sessionSignature}). Chữ ký được tạo từ chuỗi triết xuất từ JSON của các tham số trong token, bao gồm:
+            \begin{itemize}
+                \item SessionID (\texttt{sid}): id của token
+                \item algorithm: giải thuật sử dụng (\texttt{ecdh\_2}) 
+                \item userId: id của yêu cầu login (\texttt{group-2})
+                \item createdAt: thời điểm tạo token (Epoch, mili-giây)
+            \end{itemize}
+
+            \item Khi client xác thực chữ ký và dữ liệu của session thành công, client và server sẽ thực hiện trao đổi khoá.
+        \end{enumerate}
+
+        % Curve parameters table inserted here as requested
+        \begin{table}[h]
+            \centering
+            \caption{Elliptic curve parameters for group-2 (ecdh\_2)}
+            \label{tab:ecdh2-curve}
+            \begin{tabular}{|l|l|}
+                \hline
+                Parameter & Value \\
+                \hline
+                $p$ & 115792089210356248762697446949407573530086143415290314195533631308867097853951 \\
+                \hline
+                $a$ & -3\\
+                \hline
+                $b$ & 41058363725152142129326129780047268409114441015993725554835256314039467401291 \\
+                \hline
+                $G_x$ & 48439561293906451759052585252797914202762949526041747995844080717082404635286 \\
+                \hline
+                $G_y$ & 36134250956749795798585127919587881956611106672985015071877198253568414405109 \\
+                \hline
+            \end{tabular}
+        \end{table}
+
+    \item \textbf{Key exchange}: Client sẽ thực hiện trao đổi khoá.
+        \begin{enumerate}
+            \item \textbf{Long-term keys}: Client tạo ngẫu nhiên cặp khoá công khai và khoá riêng (long-term key). Khoá riêng là một số nguyên và khoá công khai là toạ độ $(x,y)$ của một điểm trên đường cong. Client tính shared secret từ khoá công khai của server và khoá riêng của mình bằng tích scalar và lấy thành phần $x$ của điểm kết quả. Từ shared secret, client tạo AES key bằng PBKDF2 với: password = shared secret, IV = 12 byte of 0x00, iterations = 1000, key length = 256 bit (32 byte).
+
+            \item \textbf{Ephemeral keys}: Client tạo cặp khoá ephemeral và ký khoá công khai lâu dài bằng khoá ephemeral, rồi gửi cho server: \texttt{sessionToken}, chữ ký (\texttt{clientPublicKeySignature}), khoá công khai ephemeral (\texttt{clientSignaturePublicKey}) và khoá công khai lâu dài (\texttt{clientPublicKey}).
+
+            \item \textbf{Server response}: Server trả về \texttt{sessionToken} mới cùng trạng thái xác thực chữ ký người dùng (\texttt{clientSignatureVerified}). Nếu thành công, client cập nhật token và hoàn tất trao đổi khoá; ứng dụng chuyển sang trạng thái tin nhắn.
+        \end{enumerate}
+
+    \item \textbf{Sending message}: Sau khi người dùng nhập tin nhắn và nhấn gửi:
+        \begin{enumerate}
+            \item \textbf{GCM Encryption}: Tin nhắn được mã hoá bằng AES-GCM (không padding). Kết quả mã hoá được base64-encode từ định dạng byte sau: 12 byte IV | ciphertext | 16 byte tag. IV được tạo ngẫu nhiên, ciphertext mã hoá từ bản rõ của tin nhắn và tag được tự động tính.
+
+            \item \textbf{Ephemeral Signing}: \texttt{CryptoManager} tạo cặp khoá ephemeral để ký chuỗi base64 của tin nhắn. ChatActivity gửi chữ ký (\texttt{messageSignature}) cùng khoá công khai ephemeral (\texttt{clientSignaturePublicKey}) tới server.
+
+            \item \textbf{Server response}: Server trả về một response gồm \texttt{sessionToken} mới, tin nhắn trả lời mã hoá (\texttt{encryptedResponse}), khoá công khai ephemeral của server (\texttt{serverSignaturePublicKey}), và chữ ký của mã hoá tin nhắn trả lời (\texttt{responseSignature}). Client xác thực chữ ký và giải mã \texttt{encryptedResponse} bằng AES-GCM sử dụng AES keys tương tự.
+        \end{enumerate}
+\end{enumerate}
+
+\subsection{Pseudocode}
+
+\subsubsection{Data type}
+\texttt{
+class ECDH:
+    fields:
+        algorithm: string      # Name of the protocol/algorithm
+        order: int             # Order of the base point G
+        curve: EC              # Elliptic curve object
+        generator: (x, y)     # Base point G, represented as x, y
+
+    constructor(algorithm, p, a, b, Gx, Gy, order):
+        self.algorithm = algorithm
+        self.order = order
+        self.curve = EC(p, a, b, order) # Initialize curve with parameters
+        self.generator = (Gx, Gy)     # Fixed generator point G
+}
+
+\subsubsection{ECDSA Signing & Verification}
+\texttt{
+# Standard ECDSA signing function (simplified, using random k instead of deterministic RFC 6979)
+function ecdsa_sign(message, generator, privkey) -> (r, s):
+    z = SHA256(message)  # Hash the message to get integer z
+
+    loop forever:  # Repeat until a valid signature is produced
+        k = random integer in [1, order-1]  # Random nonce k (ephemeral secret)
+        P = generator · k  # Compute point R = k * G
+        if P is None:
+            raise Error("Scalar multiplication failed")
+
+        r = P.x mod order  # r is the x-coordinate of R modulo curve order
+        if r == 0: continue  # Invalid if r = 0 → try new k
+        s = (k⁻¹ · (z + r · privkey)) mod order  # Standard ECDSA formula for s
+        if s == 0: continue  # Invalid if s = 0 → try new k
+
+        return (r, s)
+
+
+# ECDSA signature verification
+function ecdsa_verify(message, generator, pubkey_point, r, s) -> bool:
+    if r or s not in [1, order-1]:  # Check if r and s are in valid range
+        raise Error("r, s invalid!")
+
+    z = SHA256(message)
+    s_inv = modular_inverse(s, order)
+    u1 = (z · s_inv) mod order
+    u2 = (r · s_inv) mod order
+
+    P = (generator · u1) + (pubkey_point · u2)  # Reconstruct verification point
+    if P.is_infinity():
+        raise Error("Verification point is infinity")
+
+    return (P.x mod order) == r  # Valid if x-coordinate matches r
+
+
+# Create a one-time (ephemeral) signature for any message
+function ephemeral_sign_message(message, generator) -> (ephemeral_pubkey, r, s):
+    ephemeral_privkey = random integer in [1, order-1]  # Temporary private key
+    ephemeral_pubkey = generator · ephemeral_privkey   # Corresponding public key R
+
+    (r, s) = ecdsa_sign(message, generator, ephemeral_privkey)
+    return (ephemeral_pubkey, r, s)
+}
+
+\subsubsection{Client instances}
+\texttt{
+class Client:
+    fields:
+        server: Server # The server instance where a client connect to
+        ecdh: ECDH 
+        aes_key: bytes 
+        server_pubkey: (x, y) # Server's long-term ECDH public key
+        hasLogined: bool
+
+    constructor(server):
+        self.server = server
+        self.hasLogined = false
+        self.aes_key = None
+
+    # Start login process: request session and perform key exchange
+    function login() -> void:
+        # Fixed parameters for secp256r1 (NIST P-256) curve
+        self.ecdh = ECDH("ecdh_2")
+
+        # 1. Request a new session from server
+        (session_data, server_pubkey_xy, server_sig_pubkey_xy, sig_tuple) = 
+            self.server.get_login_session(self.ecdh)
+
+        # Store server's long-term public key
+        self.server_pubkey = (server_pubkey_xy[0], server_pubkey_xy[1])
+
+        # 2. Verify server's signature on session data → trust that session came from real server
+        sessionDataStr = json_stringify(session_data)
+        sig_pubkey_point = (server_sig_pubkey_xy[0], server_sig_pubkey_xy[1])
+        (r, s) = sig_tuple
+
+        if ecdsa_verify(sessionDataStr, self.ecdh.generator, sig_pubkey_point, r, s) is false:
+            raise Error("Login failed: Could not verify server")
+
+        # Proceed to key exchange if verification passes
+        self.do_key_exchange()
+
+    # Perform ECDH key exchange with proof of possession
+    function do_key_exchange() -> void:
+        # 1. Generate client's long-term ECDH key pair
+        privkey = random integer in [1, self.ecdh.order - 1]
+        pubkey = self.ecdh.generator · privkey
+
+        # 2. Compute shared secret using server's public key
+        shared_point = self.server_pubkey · privkey
+        shared_secret = shared_point.x
+
+        # 3. Derive the same AES key as the server
+        secret_bytes = integer_to_bytes(shared_secret)
+        self.aes_key = pbkdf2(secret_bytes, bytes(16), 1000, 32)
+
+        # 4. Message to sign: JSON of client's public key coordinates
+        client_pubkey_dict = {"x": pubkey.x, "y": pubkey.y}
+        clientPublicKeyString = json_stringify(client_pubkey_dict)
+        
+        # 5. Sign with ephemeral key to prove ownership of private key
+        (ephemeral_pubkey, r, s) = ephemeral_sign_message(clientPublicKeyString, self.ecdh.generator)
+
+        # 6. Send data to server and check response
+        result = self.server.do_key_exchange(
+            (pubkey.x, pubkey.y),                  # Client's long-term public key
+            (r, s),                                # Signature
+            (ephemeral_pubkey.x, ephemeral_pubkey.y)  # Ephemeral public key
+        )
+
+        if result ≠ "success":
+            raise Error("Key exchange failed")
+
+        self.hasLogined = true
+
+    # Send an encrypted message to the server
+    function send_message(message="Example message!") -> void:
+        if not self.hasLogined:
+            raise Error("Client has not logged in")
+        if self.aes_key is None:
+            raise Error("AES key not established")
+
+        # 1. Encrypt message using AES-GCM (provides confidentiality + authenticity)
+        # encrypted_message = ciphertext | 16 bytes of tag
+        iv = random_bytes(12)
+        encrypted_message = aes_gcm_encrypt(message.encode(), self.aes_key, iv, mac_len=16)
+
+        # 2. Sign the ciphertext with ephemeral key → server can verify integrity
+        signing_message = base64(iv + encrypted_message)
+        (ephemeral_pubkey, r, s) = ephemeral_sign_message(signing_message, self.ecdh.generator)
+
+        # 3. Send message and receive reply
+        (encrypted_reply, reply_iv, reply_sig_pubkey_xy, reply_rs) = self.server.reply_message(
+            encrypted_message,
+            iv,
+            (ephemeral_pubkey.x, ephemeral_pubkey.y),
+            (r, s)
+        )
+
+        # 4. Verify server's signature on reply ciphertext
+        reply_sig_pubkey_point = (reply_sig_pubkey_xy[0], reply_sig_pubkey_xy[1])
+        (reply_r, reply_s) = reply_rs
+
+        if ecdsa_verify(hex(encrypted_reply), self.ecdh.generator, reply_sig_pubkey_point, reply_r, reply_s) is false:
+            raise Error("Could not verify server reply")
+
+        # 5. Decrypt and display server's reply
+        # Including verifying tags inside encrypted_replyt, encrypted_reply = ciphertext | tag
+        plaintext_reply = aes_gcm_decrypt(encrypted_reply, self.aes_key, reply_iv, mac_len=16)
+        print("Server reply:", plaintext_reply.decode())
+}
+
+\subsubsection{Server instances}
+\texttt{
+class Server:
+    fields:
+        ecdh: ECDH | None               # Curve parameters received from client
+        client_pubkey: (x, y) | None    # Client's long-term ECDH public key
+        privkey: int                    # Server's long-term private key (new per session)
+        pubkey: (x, y)                  # Server's long-term public key
+        shared_secret: int              # ECDH shared secret (x-coordinate only)
+        aes_key: bytes                  # Derived AES-256 key for encryption
+
+    constructor():
+        ecdh = None
+        client_pubkey = None
+
+    # Create a new session with random ID and timestamp
+    function create_session(user_id="group-2", algo="ecdh_2") -> dict:
+        sid = hex(random_bytes(32))                # 32 random bytes as session ID
+        created = current_unix_timestamp()
+        return {
+            "sessionId": sid,
+            "algorithm": algo,
+            "userId": user_id,
+            "createdAt": created
+        }
+
+    # Handle client's login request: create session and provide authenticated data
+    function get_login_session(ecdh) -> (session_data, server_pubkey_xy, server_sig_pubkey_xy, sig_tuple):
+        # 1. Generate fresh session information
+        session_data = create_session()
+
+        # 2. Serialize session data to sign
+        sessionDataStr = json_stringify(session_data)
+
+        # 3. Sign session data with an ephemeral key → proves server created this session
+        (ephemeral_pubkey, r, s) = ephemeral_sign_message(sessionDataStr, ecdh.generator)
+        (ephe_x, ephe_y) = ephemeral_pubkey.(x, y)
+
+        # 4. Generate server's long-term ECDH key pair for this session
+        privkey = random integer in [1, ecdh.order - 1]
+        pubkey = ecdh.generator · privkey
+        (pub_x, pub_y) = pubkey.(x, y)
+
+        # Store for later use in key exchange
+        self.ecdh = ecdh
+        self.privkey = privkey
+        self.pubkey = pubkey
+
+        return (
+            session_data,
+            (pub_x, pub_y),           # Server's long-term ECDH public key
+            (ephe_x, ephe_y),         # Ephemeral public key used for signing
+            (r, s)                    # Signature over session_data
+        )
+
+    # Process client's key exchange: receive client's public key and proof of possession
+    function do_key_exchange(client_pubkey_xy, client_rs, client_sig_pubkey_xy) -> string:
+        # 1. Store client's long-term public key
+        client_pubkey = (client_pubkey_xy.x, client_pubkey_xy.y)
+        self.client_pubkey = client_pubkey
+
+        # 2. Compute ECDH shared secret (only x-coordinate used)
+        shared_point = client_pubkey · self.privkey
+        self.shared_secret = shared_point.x
+
+        # 3. Derive AES-256 key using PBKDF2 (zero salt, 1000 iterations)
+        secret_bytes = integer_to_bytes(self.shared_secret)
+        self.aes_key = pbkdf2(secret_bytes, bytes(16), 1000, 32)
+
+        # 4. Reconstruct the message the client signed: JSON of their public key coordinates
+        msg = json_stringify({
+            "x": client_pubkey.x,
+            "y": client_pubkey.y    
+        })
+
+        # 5. Verify client's ephemeral signature → proves they control the private key
+        ephe_pubkey_point = (client_sig_pubkey_xy.x, client_sig_pubkey_xy.y)
+        (r, s) = client_rs
+
+        if ecdsa_verify(msg, self.ecdh.generator, ephe_pubkey_point, r, s):
+            return "success"
+        else:
+            return "error"
+
+    # Handle encrypted message from client and send encrypted reply
+    function reply_message(ciphertext, client_iv, client_sig_pubkey_xy, client_rs)
+        -> (encrypted_reply, reply_iv, reply_sig_pubkey_xy, reply_rs):
+
+        # 1. Verify client's signature over the ciphertext → prevents tampering
+        sig_pubkey_point = (client_sig_pubkey_xy.x, client_sig_pubkey_xy.y)
+        (r, s) = client_rs
+
+        if ecdsa_verify(hex(ciphertext), self.ecdh.generator, sig_pubkey_point, r, s) is false:
+            raise Error("Server cannot verify client message!")
+
+        # 2. Decrypt the incoming message using AES-GCM
+        # Including verifying tags inside ciphertext
+        plaintext = aes_gcm_decrypt(ciphertext, self.aes_key, client_iv, mac_len=16)
+
+        # 3. Prepare and encrypt a reply with a fresh IV
+        reply_msg = "Example reply!"
+        reply_iv = random_bytes(12)
+        # encrypted_reply = ciphertext | 16 bytes of tag
+        encrypted_reply = aes_gcm_encrypt(reply_msg.encode(), self.aes_key, reply_iv, mac_len=16)
+
+        # 4. Sign the reply ciphertext with a new ephemeral key
+        signed_message = base64(iv + encrypted_reply)
+
+        (ephe_pubkey, r, s) = ephemeral_sign_message(hex(encrypted_reply), self.ecdh.generator)
+        (ephe_x, ephe_y) = ephe_pubkey.(x, y)
+
+        return (
+            encrypted_reply, 
+            reply_iv, 
+            (ephe_x, ephe_y),   # Ephemeral public key for reply signature
+            (r, s)
+        )
+}
+
+\subsection{Runnable reimplementation}
+Hiện thực mô phỏng client và server bằng Python được cung cấp ở dưới, kèm theo hướng dẫn cài đặt và chạy chương trình. Hiện thực bao gồm cả tính toán của ECDH ở trong \texttt{curve.py}. Các tinh toán sử dụng hệ toạ độ projective (x, y, z), và có thể trả về toạ độ affine (x, y) theo yêu cầu.
+
+Link code: https://github.com/lagomst/c0308_btl_hk251/blob/main/smc/legacy_code
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{images/smc_implementation.png}
+    \caption{Kết quả chạy hiện thực cặp client-server}
+    \label{fig:smc_implementation}
+\end{figure}
+
