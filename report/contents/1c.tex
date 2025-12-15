@@ -1,0 +1,64 @@
+\subsection*{Problem 1(c)}
+
+Giả sử ta có $d$ ký tự sau dấu thập phân của
+\[
+\sqrt{X},
+\]
+với $X \in \mathbb{Z}_{>0}$ chưa biết. Đặt $\beta$ là giá trị xấp xỉ sao cho
+\[
+\left| \beta - \sqrt{X} \right| < 10^{-d}.
+\]
+
+\paragraph{Đưa về dạng quan hệ số nguyên (integer relation).}
+Lấy căn hai vế cho ta
+\[
+\beta^2 = X + \varepsilon,
+\]
+với độ error $\varepsilon$ thoả
+\[
+|\varepsilon| = |\beta^2 - X| < C \cdot 10^{-d}
+\]
+với một giá trị hằng nhỏ $C$ dựa trên $\sqrt{X}$. Vì thế, $X$ là một giá trị nguyên cần tìm$\beta^2$.
+
+Tương tự , ta tìm số nguyên $a,b \in \mathbb{Z}$, đồng thời không bằng 0, sao cho
+\[
+a + b \beta^2 \approx 0.
+\]
+Trong đó, cặp $(a,b) = (X,-1)$ trả về
+\[
+a + b \beta^2 = X - \beta^2 = -\varepsilon,
+\]
+which is very small in absolute value.
+
+\paragraph{Lattice construction.}
+Đặt
+\[
+\gamma = 10^d \beta^2.
+\]
+Ta tạo một lattice $\mathcal{L} \subset \mathbb{Z}^2$ với basis
+\[
+B =
+\begin{pmatrix}
+1 & \lfloor \gamma \rfloor \\
+0 & 10^d
+\end{pmatrix}.
+\]
+Bất cứ lattice vector sẽ có dạng
+\[
+(a,\, a\lfloor \gamma \rfloor + b \cdot 10^d),
+\quad a,b \in \mathbb{Z}.
+\]
+
+Cho $(a,b) = (X,-1)$, toạ độ thứ hai trở thành
+\[
+X\lfloor \gamma \rfloor - 10^d
+= 10^d(X - \beta^2) + \delta,
+\]
+với $|\delta| < X$ để tính sai lệch làm tròn $\lfloor \gamma \rfloor$. Vì
+\[
+|X - \beta^2| < C \cdot 10^{-d},
+\]
+giá trị lattice vector trả về sẽ ngắn hơn rất nhiều với các vector trong $\mathcal{L}$.
+
+\paragraph{Tìm lại X $X$.}
+Bằng cách chạy giải thuật LLL cho lattice $\mathcal{L}$, ta có thể tìm lại một vector ngắn khác không. Vì giá trị sai lệch rất nhỏ từ xấp sỉ $\sqrt{X}$, vector này sẽ tương ứng với quan hệ số nguyên (integer relation) với $(X,-1)$. Từ đó, giá trị $X$ có thể được tìm từ toạ độ đầu tiên của vector. Như vậy, biết được một lượng số chữ số sau dấu thập phân của $\sqrt{X}$ giúp ta tìm lại được giá trị số nguyên $X$ bằng việc đưa về thành bài toán SVP. 
