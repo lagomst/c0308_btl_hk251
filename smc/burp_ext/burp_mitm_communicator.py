@@ -11,7 +11,7 @@ OUTPUT_FILE = "server.txt"
 INPUT_FILE = "fake.txt"
 
 HOST = '127.0.0.1'  # The server's hostname or IP address
-PORT = 65431     # The port used by the server
+PORT = 9998     # The port used by the server
 
 class BurpExtender(IBurpExtender, IHttpListener):
 
@@ -27,7 +27,7 @@ class BurpExtender(IBurpExtender, IHttpListener):
             requestInfo = self.helpers.analyzeRequest(messageInfo)
             headers = list(requestInfo.getHeaders() or '') 
             url = requestInfo.getUrl().toString()         
-            new_data = None
+            new_data = None            
             if "/session/exchange" in url:
                 print("Exchange client spotted! Intercepting...")
                 data = self.extract_client_request(messageInfo.getRequest(), url)
