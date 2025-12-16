@@ -6,14 +6,14 @@ However the code for the second method didn't get out-right removed, and after a
 
 This code doesn't have much documentation, but if you understand how the flow work, this is no less different than the result of the true MITM.
 
-### Installation
+# Installation
 
 You will need install these libraries:
 `pip install pycryptodome
 pip install fastapi
 pip install pyjwt`
 
-### Running
+# Running
 1. Set up BurpSuite, Frida and AVD as usual. See the README in upper folder for the first method
 
 2. On BurpSuite, inside Proxy setting, edit the proxy you're using. Under "Redirect Handling" tab, add host `127.0.0.1` and port `9999` to redirect address, then click OK. After that, install `replace_host.py` as Python extension on BurpSuite. 
