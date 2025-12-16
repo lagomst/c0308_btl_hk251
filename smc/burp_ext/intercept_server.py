@@ -140,13 +140,13 @@ class Server:
         created = datetime.now().timestamp()
         
         session_data = {
-            "sessionId": sid,
+            "sid": sid,
             "algorithm": algo,
             "userId": user_id,
             "createdAt": created
         }
         return session_data
-        
+    
     def get_login_session(self, custom_session_data:str|dict=None):
         curve = self.ecdh.curve
         G = self.ecdh.generator
@@ -156,7 +156,7 @@ class Server:
         else:
             session_data = self.create_session()
         # Sign session
-        sessionDataStr = json.dumps(session_data) if isinstance(session_data, dict) else session_data # message
+        sessionDataStr = dict_to_str_nowhitespace(session_data) if isinstance(session_data, dict) else session_data # message
         ephemeral_pubkey, r, s = ephemeral_sign_message(sessionDataStr, G)
         ephe_x, ephe_y = ephemeral_pubkey.get_affine_coordinate()
         # Create a pair of private and public key for this particular client

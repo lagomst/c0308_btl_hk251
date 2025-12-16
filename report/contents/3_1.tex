@@ -1,4 +1,4 @@
-\section{Task 3.1: Chặn bắt và Phân tích API SMC}
+\section{Chặn bắt và Phân tích API SMC}
 \captionsetup{aboveskip=10pt}
 
 
@@ -201,7 +201,7 @@ Sau khi cài đặt APK và thử nghiệm, phát hiện ứng dụng có multip
 
 \textbf{SSL Pinning Implementation Analysis:}
 
-\begin{table}[h]
+\begin{table}[H]
   \centering
   \small
   \begin{tabularx}{\textwidth}{|p{3cm}|p{4cm}|X|}
@@ -322,7 +322,7 @@ frida-ps -U | grep securechat
 
 \textbf{API Call 1: Session Create}
 
-\begin{table}[h]
+\begin{table}[H]
   \centering
   \small
   \begin{tabularx}{\textwidth}{|p{3cm}|X|}
@@ -359,7 +359,7 @@ frida-ps -U | grep securechat
 
 \textbf{Screenshot từ Burp Suite:}
 
-\begin{figure}[h]
+\begin{figure}[H]
   \centering
   \includegraphics[width=0.9\textwidth]{images/01-session-create-burp-capture.png}
   \caption{Session Create API được chặn bắt trong Burp Suite}
@@ -367,7 +367,7 @@ frida-ps -U | grep securechat
 
 \textbf{API Call 2: Session Exchange}
 
-\begin{table}[h]
+\begin{table}[H]
   \centering
   \small
   \begin{tabularx}{\textwidth}{|p{3cm}|X|}
@@ -429,7 +429,7 @@ frida-ps -U | grep securechat
 
 \textbf{Screenshot từ Burp Suite:}
 
-\begin{figure}[h]
+\begin{figure}[H]
   \centering
   \includegraphics[width=0.9\textwidth]{images/02-session-exchange-burp-capture.png}
   \caption{Session Exchange API được chặn bắt trong Burp Suite}
@@ -448,7 +448,7 @@ frida-ps -U | grep securechat
 
 \textbf{Chi tiết Curve Parameters (P-256):}
 
-\begin{table}[h]
+\begin{table}[H]
   \centering
   \small
   \begin{tabularx}{\textwidth}{|p{2cm}|X|}
@@ -475,7 +475,7 @@ frida-ps -U | grep securechat
 
 \textbf{API Call 3: Message Send}
 
-\begin{table}[h]
+\begin{table}[H]
   \centering
   \small
   \begin{tabularx}{\textwidth}{|p{3cm}|X|}
@@ -506,7 +506,7 @@ frida-ps -U | grep securechat
 
 \textbf{Chat Interface Screenshot:}
 
-\begin{figure}[h]
+\begin{figure}[H]
   \centering
   \includegraphics[width=0.7\textwidth]{images/chat-interface.png}
   \caption{Giao diện cuộc hội thoại thực tế giữa User và SecureBot trong ứng dụng SMC}
@@ -514,7 +514,7 @@ frida-ps -U | grep securechat
 
 \textbf{Screenshot từ Burp Suite:}
 
-\begin{figure}[h]
+\begin{figure}[H]
   \centering
   \includegraphics[width=0.9\textwidth]{images/03-message-send-burp-capture.png}
   \caption{Message Send API được chặn bắt trong Burp Suite}
@@ -614,7 +614,7 @@ apktool d secure-app.apk -o secure-app-decompiled
 
 \textbf{Code Mapping Results (Thực tế):}
 
-\begin{table}[h]
+\begin{table}[H]
   \centering
   \small
   \begin{tabularx}{\textwidth}{|p{3.5cm}|p{3cm}|p{2cm}|X|}
@@ -646,61 +646,61 @@ const-string v7, "https://crypto-assignment.dangduongminhnhat2003.workers.dev/se
 
 \textbf{Screenshots từ Code Analysis:}
 
-\begin{figure}[h]
+\begin{figure}[H]
   \centering
   \includegraphics[width=0.8\textwidth]{images/01-session-create-code-found.png}
   \caption{Session Create URL được tìm thấy trong LoginActivity.smali}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[H]
   \centering
   \includegraphics[width=0.8\textwidth]{images/02-session-exchange-search.png}
   \caption{Session Exchange components trong decompiled code}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[H]
   \centering
   \includegraphics[width=0.8\textwidth]{images/03-ecdh2-algorithm-search.png}
   \caption{ECDH\_2 algorithm components trong decompiled code}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[H]
   \centering
   \includegraphics[width=0.8\textwidth]{images/04-curve-parameters-search.png}
   \caption{Curve Parameters được tìm thấy trong source code}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[H]
   \centering
   \includegraphics[width=0.8\textwidth]{images/07-message-send-search.png}
   \caption{Message Send endpoint trong decompiled code}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[H]
   \centering
   \includegraphics[width=0.8\textwidth]{images/08-encrypted-message-found.png}
   \caption{Encrypted message handling trong messaging components}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[H]
   \centering
   \includegraphics[width=0.8\textwidth]{images/05-client-public-key-search.png}
   \caption{Client Public Key components trong decompiled code}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[H]
   \centering
   \includegraphics[width=0.8\textwidth]{images/06-server-public-key-search.png}
   \caption{Server Public Key handling trong source code}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[H]
   \centering
   \includegraphics[width=0.8\textwidth]{images/09-message-signature-found.png}
   \caption{Message signature implementation trong source code}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[H]
   \centering
   \includegraphics[width=0.8\textwidth]{images/10-encrypted-response-found.png}
   \caption{Encrypted response handling trong messaging system}
@@ -708,7 +708,7 @@ const-string v7, "https://crypto-assignment.dangduongminhnhat2003.workers.dev/se
 
 \subsection{Bảng Tóm tắt API}
 
-\begin{table}[h]
+\begin{table}[H]
   \centering
   \small
   \begin{tabularx}{\textwidth}{|p{0.5cm}|X|p{1.5cm}|p{3cm}|p{3cm}|p{1.5cm}|}
@@ -741,7 +741,7 @@ const-string v7, "https://crypto-assignment.dangduongminhnhat2003.workers.dev/se
 
 \textbf{Vulnerabilities được phát hiện:}
 
-\begin{table}[h]
+\begin{table}[H]
   \centering
   \small
   \begin{tabularx}{\textwidth}{|p{3cm}|p{2cm}|p{4cm}|X|}
@@ -828,7 +828,7 @@ Task 3.1 đã hoàn thành thành công việc chặn bắt và phân tích API 
 
 \textbf{API Response Times (Measured):}
 
-\begin{table}[h]
+\begin{table}[H]
   \centering
   \small
   \begin{tabularx}{\textwidth}{|X|p{2cm}|p{2cm}|p{2cm}|p{3cm}|}
@@ -860,7 +860,7 @@ Task 3.1 đã hoàn thành thành công việc chặn bắt và phân tích API 
 
 \textbf{Tools được sử dụng:}
 
-\begin{table}[h]
+\begin{table}[H]
   \centering
   \small
   \begin{tabularx}{\textwidth}{|p{3cm}|p{2cm}|X|}
@@ -896,7 +896,7 @@ Task 3.1 đã hoàn thành thành công việc chặn bắt và phân tích API 
 
 \textbf{Challenges và Solutions:}
 
-\begin{table}[h]
+\begin{table}[H]
   \centering
   \small
   \begin{tabularx}{\textwidth}{|p{4cm}|p{4cm}|X|}

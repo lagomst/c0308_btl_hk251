@@ -36,7 +36,7 @@ def brute_force_dict_order(data:dict, target_hash_value:int):
 
 
 HOST = '127.0.0.1'  # Standard loopback interface address (localhost)
-PORT = 65431    # Port to listen on (non-privileged ports are > 1023)
+PORT = 9998    # Port to listen on (non-privileged ports are > 1023)
 
 # This class/function manages the socket connection and buffers data
 class SocketReader:

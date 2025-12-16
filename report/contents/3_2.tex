@@ -67,7 +67,7 @@ class ECDH:
         algorithm: string      # Name of the protocol/algorithm
         order: int             # Order of the base point G
         curve: EC              # Elliptic curve object
-        generator: (x, y)     # Base point G, represented as x, y
+        generator: (x, y)      # Base point G, represented as x, y
 
     constructor(algorithm, p, a, b, Gx, Gy, order):
         self.algorithm = algorithm

@@ -1,4 +1,4 @@
-\subsection*{Problem 1(c)}
+\subsection{Tìm X biết d ký tự của căn X}
 
 Giả sử ta có $d$ ký tự sau dấu thập phân của
 \[
@@ -9,7 +9,7 @@ với $X \in \mathbb{Z}_{>0}$ chưa biết. Đặt $\beta$ là giá trị xấp 
 \left| \beta - \sqrt{X} \right| < 10^{-d}.
 \]
 
-\paragraph{Đưa về dạng quan hệ số nguyên (integer relation).}
+\subsubsection{Đưa về dạng quan hệ số nguyên (integer relation).}
 Lấy căn hai vế cho ta
 \[
 \beta^2 = X + \varepsilon,
@@ -28,9 +28,9 @@ Trong đó, cặp $(a,b) = (X,-1)$ trả về
 \[
 a + b \beta^2 = X - \beta^2 = -\varepsilon,
 \]
-which is very small in absolute value.
+với giá trị rất nhỏ.
 
-\paragraph{Lattice construction.}
+\subsubsection{Lattice construction.}
 Đặt
 \[
 \gamma = 10^d \beta^2.
@@ -60,5 +60,6 @@ với $|\delta| < X$ để tính sai lệch làm tròn $\lfloor \gamma \rfloor$.
 \]
 giá trị lattice vector trả về sẽ ngắn hơn rất nhiều với các vector trong $\mathcal{L}$.
 
-\paragraph{Tìm lại X $X$.}
+\subsubsection{Tìm lại X.}
 Bằng cách chạy giải thuật LLL cho lattice $\mathcal{L}$, ta có thể tìm lại một vector ngắn khác không. Vì giá trị sai lệch rất nhỏ từ xấp sỉ $\sqrt{X}$, vector này sẽ tương ứng với quan hệ số nguyên (integer relation) với $(X,-1)$. Từ đó, giá trị $X$ có thể được tìm từ toạ độ đầu tiên của vector. Như vậy, biết được một lượng số chữ số sau dấu thập phân của $\sqrt{X}$ giúp ta tìm lại được giá trị số nguyên $X$ bằng việc đưa về thành bài toán SVP. 
+Hiện thực code có thể xem trong \texttt{/code/problem1c/find\_x.py}.
