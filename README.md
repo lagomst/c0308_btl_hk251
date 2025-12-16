@@ -37,7 +37,3 @@ Notes
 - The `smc` folder contains a `burp_ext/` directory with Burp extension scripts and an intercept server for testing.
 - The `code/problem1b` contains a Dockerfile and `docker-compose.yml` to reproduce that task in a container.
 - See `smc/legacy_code/requirements.txt` for Python package dependencies used by the SecureChat implementation.
-
-If you want, I can:
-- run the LaTeX build for `report/main.tex` now, or
-- run the Python demo in `smc/legacy_code` to verify it runs locally.
