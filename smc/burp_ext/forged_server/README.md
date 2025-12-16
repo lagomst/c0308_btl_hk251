@@ -9,9 +9,11 @@ This code doesn't have much documentation, but if you understand how the flow wo
 # Installation
 
 You will need install these libraries:
-`pip install pycryptodome
+```bash
+pip install pycryptodome
 pip install fastapi
-pip install pyjwt`
+pip install pyjwt
+```
 
 # Running
 1. Set up BurpSuite, Frida and AVD as usual. See the README in upper folder for the first method
