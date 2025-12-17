@@ -1,4 +1,4 @@
-### SecureChat Man-in-the-Middle (MITM) tooling
+# SecureChat Man-in-the-Middle (MITM) tooling
 
 About
 -----
@@ -60,4 +60,5 @@ Files of interest
 
 Notes
 -----
+
 This code is intended for research, education, and authorized security testing only. Do not use it against systems for which you do not have explicit permission.
