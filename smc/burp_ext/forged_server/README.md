@@ -1,4 +1,4 @@
-### What is this?
+# What is this?
 
 So back when researching the exploit, our team was debating on two methods: one is setting up a true MITM with a fake client and a fake server, the other is using Burp to redirect all client request to a running server. In the end, the former method was chosen, in order to make client unaware of them being eavesdropped, making an illusion of secure communication. Also, the later method didn't have capability to reply messages in a contexual way like a real server, thus making it quite distinguishable.
 
