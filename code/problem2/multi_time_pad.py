@@ -1,7 +1,5 @@
 import string
 
-# BƯỚC 1: CHUẨN BỊ DỮ LIỆU
-# Đây là toàn bộ ciphertext của bạn
 hex_ciphertexts = [
     "030d091e0052020f0d32451b0d16520c411d3f0c1c4c111a0c154e2710184c111d4d120b36",
     "030d094c0b1300044e38034c180d174d12063e154c1b04014d150632452e05091e1441217045380904",
@@ -36,92 +34,62 @@ hex_ciphertexts = [
 # Chuyển đổi hex sang bytes
 ciphertexts = [bytes.fromhex(c) for c in hex_ciphertexts]
 
-# Tìm độ dài ngắn nhất, vì ta chỉ có thể tấn công các cột mà mọi C đều có
-min_len = min(len(c) for c in ciphertexts)
-print(f"[*] Có {len(ciphertexts)} bản mã. Tấn công trên {min_len} bytes đầu tiên.")
+max_len = max(len(c) for c in ciphertexts)
+print(f"[*] Có {len(ciphertexts)} bản mã. Đang tấn công toàn bộ {max_len} bytes.")
 
-# ----------------------------------------------------
-
-# BƯỚC 2: HÀM CHẤM ĐIỂM
-# Hàm này chấm điểm "độ hợp lý" của một byte
-# Điểm cao cho ký tự phổ biến, điểm âm nặng cho ký tự "rác"
+# Hàm chấm điểm (Giữ nguyên hoặc tinh chỉnh nhẹ)
 def score_byte(b):
-    b = int(b)
-    # Giả sử văn bản là tiếng Anh (hoặc ASCII)
+    if b < 32 or b > 126: 
+        return -100 # Phạt nặng hơn nữa để chắc chắn loại bỏ
+    c = chr(b) 
     
-    # Dấu cách (space) là phổ biến nhất
-    if b == 32:
+    if c == ' ': return 25 
+    lower_c = c.lower()
+    if lower_c in 'etaoinh': 
         return 20
-    # Ký tự chữ cái thường (rất phổ biến)
-    if b >= 97 and b <= 122: # a-z
+    if lower_c in 'srdlu': 
         return 15
-    # Ký tự chữ hoa (phổ biến)
-    if b >= 65 and b <= 90: # A-Z
+    if 'a' <= lower_c <= 'z':
         return 10
-    # Dấu câu và số (khá phổ biến)
-    if b in b".,'\"?!:;()[]{}0123456789":
-        return 5
-    # Ký tự điều khiển (control chars) và ký tự rác
-    # Đây là những ký tự gần như KHÔNG BAO GIỜ xuất hiện
-    if b < 32 or b > 126:
-        return -50 # Phạt rất nặng
+    if c in ".,'\"?!:;": return 8 
+    if c in "0123456789": return 5 
     
-    # Các trường hợp khác (ví dụ: #, $, %, ^, &)
     return 1
 
-# ----------------------------------------------------
+recovered_key = [] 
 
-# BƯỚC 3: VÒNG LẶP TẤN CÔNG CHÍNH
-
-recovered_key = [] # Key sẽ được lưu ở đây
-
-# Lặp qua từng cột (từng byte)
-for i in range(min_len):
+for i in range(max_len):
     best_key_byte = 0
-    best_score = -float('inf') # Điểm thấp vô cùng
+    best_score = -float('inf')
     
-    # Thử 256 giá trị có thể có cho key_byte (0-255)
+    # Thử 256 giá trị key
     for k_guess in range(256):
         current_score = 0
+        count = 0 # Đếm xem có bao nhiêu bản mã tham gia vào cột này
         
-        # Thử giải mã CỘT THỨ i của TẤT CẢ các bản mã
         for c in ciphertexts:
-            # c[i] là byte thứ i của bản mã c
-            decrypted_byte = c[i] ^ k_guess
-            current_score += score_byte(decrypted_byte)
-            
-        # So sánh điểm
+            if i < len(c):
+                decrypted_byte = c[i] ^ k_guess
+                current_score += score_byte(decrypted_byte)
+                count += 1
+        
+        if count == 0: continue
+
         if current_score > best_score:
             best_score = current_score
             best_key_byte = k_guess
             
-    # Sau khi thử hết 256 giá trị, `best_key_byte` là byte key tốt nhất
     recovered_key.append(best_key_byte)
 
-# ----------------------------------------------------
-
-# BƯỚC 4: HIỂN THỊ KẾT QUẢ
-
-print("\n--- KHÓA (KEY) ĐÃ ĐƯỢC PHỤC HỒI (dạng bytes) ---")
-# Chuyển danh sách số int sang đối tượng bytes
+# Hiển thị kết quả
 key_bytes = bytes(recovered_key)
-print(key_bytes.hex()) # In key ở dạng hex
+print(f"\n--- KEY (HEX): {key_bytes.hex()} ---")
 
-print("\n--- CÁC BẢN RÕ (PLAINTEXT) ĐÃ ĐƯỢC GIẢI MÃ (THỬ) ---")
-
-# Hàm XOR 2 mảng bytes
-def xor_bytes(a, b):
-    # Lấy độ dài ngắn hơn để xor
-    length = min(len(a), len(b))
-    return bytes([a[i] ^ b[i] for i in range(length)])
-
-# In kết quả giải mã
-for i, c in enumerate(ciphertexts):
-    decrypted_text = xor_bytes(c, key_bytes)
+print("\n--- PLAINTEXTS ---")
+for idx, c in enumerate(ciphertexts):
+    pt = []
+    for i in range(len(c)):
+        pt.append(c[i] ^ key_bytes[i])
     
-    # Chúng ta chỉ có thể giải mã an toàn đến min_len
-    # Phần còn lại của bản mã (nếu dài hơn) sẽ bị xor với key_bytes lặp lại
-    # nhưng vì key của chúng ta chỉ dài min_len, chúng ta chỉ nên in phần đó
-    
-    # Thử in ra dạng 'utf-8', bỏ qua các lỗi
-    print(f"P[{i:02d}]: {decrypted_text.decode('utf-8', errors='ignore')}")
+    decrypted_text = bytes(pt).decode('utf-8', errors='replace')
+    print(f"P[{idx:02d}]: {decrypted_text}")
