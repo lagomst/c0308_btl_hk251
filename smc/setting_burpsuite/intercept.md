@@ -36,8 +36,8 @@ This guide outlines the steps to configure an Android 14 (API 34) emulator, inst
       * Navigate to **Proxy -\> Options -\> Import/Export CA Certificate**.
       * Click **"Export Certificate in DER format"**.
       * Save the certificate to a known location on your host PC (e.g., `cacert.der`).
-4.  **Install Certificate:** Android 14 (API 34) requires specific steps to install a CA as a **system-trusted credential**. Follow a guide like the one referenced:
-      * `https://httptoolkit.com/blog/android-14-install-system-ca-certificate/#how-to-install-system-ca-certificates-in-android-14`
+4.  **Install Certificate:** Android 14 (API 34) requires specific steps to install a CA as a **system-trusted credential**. :
+      * See this guide: `https://httptoolkit.com/blog/android-14-install-system-ca-certificate/#how-to-install-system-ca-certificates-in-android-14`
       * **Create a hashed certificate name:**
         ```
         openssl x509 -inform DER -in <name>.der -out <name>.pem
